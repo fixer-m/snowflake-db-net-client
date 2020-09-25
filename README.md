@@ -1,6 +1,7 @@
-[![NuGet](https://img.shields.io/badge/nuget-v0.2.2-green.svg)](https://www.nuget.org/packages/Snowflake.Client/)
+[![NuGet](https://img.shields.io/badge/nuget-v0.2.2-green.svg)](https://www.nuget.org/packages/Snowflake.Client/) 
+[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
 
-## Snowflake.Client - .NET Client for Snowflake REST API
+## Snowflake.Client
 Snowflake.Client is unofficial client (wrapper) for [Snowflake](https://www.snowflake.com) REST API.
 Gives more efficient and easier way to work with Snowflake compared to official ADO.NET connector ([Snowflake.Data](https://github.com/snowflakedb/snowflake-connector-net)).
 
@@ -56,8 +57,10 @@ var employeesParam_4 = snowflakeClient.Query<Employee>("SELECT * FROM EMPLOYEES 
 ```
 
 ### Installation
-Add nuget package to your project:  
-* Install-Package [Snowflake.Client](https://www.nuget.org/packages/Snowflake.Client) (via Nuget)
+Add nuget package [Snowflake.Client](https://www.nuget.org/packages/Snowflake.Client) to your project:  
+```{r, engine='bash', code_block_name}
+PM> Install-Package Snowflake.Client
+```
 
 ### Road Map 
 - Chunks downloader (for big amount of data)

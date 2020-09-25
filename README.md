@@ -2,8 +2,8 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## Snowflake.Client
-Snowflake.Client is unofficial client (wrapper) for [Snowflake](https://www.snowflake.com) REST API.
-Gives more efficient and easier way to work with Snowflake compared to official ADO.NET connector ([Snowflake.Data](https://github.com/snowflakedb/snowflake-connector-net)).
+Snowflake.Client is unofficial .NET client (wrapper) for [Snowflake](https://www.snowflake.com) REST API.
+Provides more efficient and easier way to work with Snowflake compared to official ADO.NET connector ([Snowflake.Data](https://github.com/snowflakedb/snowflake-connector-net)).
 
 ### Main Features
 - Basic authentication
@@ -17,13 +17,15 @@ Improvements in Snowflake.Client vs Snowflake.Data:
 - Performance: Re-uses Snowflake session, i.e. less roundtrips to SF
 - Performance: Faster json (de)serialize with System.Text.Json (vs Newtonsoft.JSON)
 - Performance: Doesn't have additional intermediate mapping from SF to DB types 
-- API: Clean syntax vs verbose ADO.NET syntax
+- API: Clean and simple syntax vs verbose ADO.NET syntax
 - Less 3rd party dependencies: 1 vs 4
+- Doesn't have confusing connection string, etc
 
 New features in Snowflake.Client:
 - Map response data to entities
 - Supports describeOnly flag
 - Has option to return raw data from Snowflake response
+- Exposes Snowflake session information
 - New SQL parameter binding with a few options (inspired by Dapper)
 
 Currently missing features in Snowflake.Client:

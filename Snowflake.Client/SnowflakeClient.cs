@@ -53,6 +53,7 @@ namespace Snowflake.Client
             clientSettings = settings;
             restClient = new RestClient();
             requestBuilder = new RequestBuilder(settings.UrlInfo);
+            SnowflakeDataMapper.SetJsonMapperOptions(settings.JsonMapperOptions);
 
             CreateNewSession(settings.AuthInfo, settings.SessionInfo);
         }

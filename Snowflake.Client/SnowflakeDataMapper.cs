@@ -7,15 +7,16 @@ namespace Snowflake.Client
 {
     public static class SnowflakeDataMapper
     {
+        private static JsonSerializerOptions JsonMapperOptions;
+
         public static IEnumerable<T> Map<T>(QueryExecResponseData data)
         {
             var columns = data.RowType;
-            var jsonSerializerOptions = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
 
             foreach (var rowRecord in data.RowSet)
             {
                 var jsonString = BuildJsonString(columns, rowRecord);
-                yield return JsonSerializer.Deserialize<T>(jsonString, jsonSerializerOptions);
+                yield return JsonSerializer.Deserialize<T>(jsonString, JsonMapperOptions);
             }
         }
 
@@ -70,6 +71,12 @@ namespace Snowflake.Client
             }
 
             return '"' + value + '"';
+        }
+
+        public static void SetJsonMapperOptions(JsonSerializerOptions jsonMapperOptions)
+        {
+            if (jsonMapperOptions != null)
+                JsonMapperOptions = jsonMapperOptions;
         }
     }
 }

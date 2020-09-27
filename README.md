@@ -23,11 +23,8 @@ var employees = snowflakeClient.Query<Employee>("SELECT * FROM MASTER.PUBLIC.EMP
 // Executes query and returns raw data from response (rows and columns)
 var employeesRawData = snowflakeClient.QueryRaw("SELECT * FROM MASTER.PUBLIC.EMPLOYEES");
 
-// Executes scalar query and returns numeric result
-long employeesCount  = snowflakeClient.ExecuteScalar("SELECT COUNT(*) FROM MASTER.PUBLIC.EMPLOYEES");
-
-// Executes non-query request and returns string result
-string useRoleResult = snowflakeClient.ExecuteNonQuery("USE MASTER.PUBLIC;");
+// Executes query and returns value of first cell as string result
+string employeesCount  = snowflakeClient.ExecuteScalar("USE ROLE ACCOUNTADMIN;");
 
 // Parameters binding options:
 var employeesParam_1 = snowflakeClient.Query<Employee>("SELECT * FROM EMPLOYEES WHERE TITLE = ?", "Programmer");

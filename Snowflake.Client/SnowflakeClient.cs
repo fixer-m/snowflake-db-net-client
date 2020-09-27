@@ -8,22 +8,44 @@ namespace Snowflake.Client
 {
     public class SnowflakeClient
     {
+        /// <summary>
+        /// Current Snowflake session.
+        /// </summary>
         public SnowflakeSession SnowflakeSession { get => session; }
+
         private SnowflakeSession session;
         private readonly RestClient restClient;
         private readonly RequestBuilder requestBuilder;
         private readonly SnowflakeClientSettings clientSettings;
 
+        /// <summary>
+        /// Creates new client and initializes new Snowflake session. 
+        /// </summary>
+        /// <param name="user">Username</param>
+        /// <param name="password">Password</param>
+        /// <param name="account">Account</param>
+        /// <param name="region">Region ("us-east-1" by default)</param>
         public SnowflakeClient(string user, string password, string account, string region = null)
          : this(new AuthInfo(user, password, account, region))
         {
         }
 
+        /// <summary>
+        /// Creates new client and initializes new Snowflake session. 
+        /// </summary>
+        /// <param name="authInfo">Auth information: user, password, account, region</param>
+        /// <param name="sessionInfo">Session information: role, schema, database, warehouse</param>
+        /// <param name="urlInfo">URL information: host, protocol and port</param>
+        /// <param name="jsonMapperOptions">JsonSerializerOptions which will be used to map response to your model</param>
         public SnowflakeClient(AuthInfo authInfo, SessionInfo sessionInfo = null, UrlInfo urlInfo = null, JsonSerializerOptions jsonMapperOptions = null)
         : this(new SnowflakeClientSettings(authInfo))
         {
         }
 
+        /// <summary>
+        /// Creates new client and initializes new Snowflake session. 
+        /// </summary>
+        /// <param name="settings">Client settings to initialize session.</param>
         public SnowflakeClient(SnowflakeClientSettings settings)
         {
             ValidateClientSettings(settings);
@@ -56,6 +78,12 @@ namespace Snowflake.Client
                 throw new SnowflakeException($"URL Host cannot be empty.");
         }
 
+        /// <summary>
+        /// Initializes new Snowflake session.
+        /// </summary>
+        /// <param name="authInfo">Auth information: user, password, account, region</param>
+        /// <param name="sessionInfo">Session information: role, schema, database, warehouse</param>
+        /// <returns>True</returns>
         public bool CreateNewSession(AuthInfo authInfo, SessionInfo sessionInfo)
         {
             session = Authenticate(authInfo, sessionInfo);
@@ -76,15 +104,13 @@ namespace Snowflake.Client
             return new SnowflakeSession(response.Data);
         }
 
-        public long ExecuteScalar(string sql, object sqlParams = null)
-        {
-            var response = QueryInternal(sql, sqlParams);
-            var rawResult = response.Data.RowSet[0][0];
-
-            return long.Parse(rawResult);
-        }
-
-        public string ExecuteNonQuery(string sql, object sqlParams = null)
+        /// <summary>
+        /// Execute SQL that selects a single value.
+        /// </summary>
+        /// <param name="sql">The SQL to execute.</param>
+        /// <param name="sqlParams">The parameters to use for this command.</param>
+        /// <returns>The first cell value returned as string.</returns>
+        public string ExecuteScalar(string sql, object sqlParams = null)
         {
             var response = QueryInternal(sql, sqlParams);
             var rawResult = response.Data.RowSet[0][0];
@@ -92,6 +118,13 @@ namespace Snowflake.Client
             return rawResult;
         }
 
+        /// <summary>
+        /// Executes a query, returning the data typed as <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of results to return.</typeparam>
+        /// <param name="sql">The SQL to execute.</param>
+        /// <param name="sqlParams">The parameters to use for this command.</param>
+        /// <returns>A sequence of data of the supplied type: one instance per row.</returns>
         public IEnumerable<T> Query<T>(string sql, object sqlParams = null)
         {
             var response = QueryInternal(sql, sqlParams);
@@ -100,6 +133,13 @@ namespace Snowflake.Client
             return result;
         }
 
+        /// <summary>
+        /// Executes a query, returning the raw data returned by REST API (rows and columns).
+        /// </summary>
+        /// <param name="sql">The SQL to execute.</param>
+        /// <param name="sqlParams">The parameters to use for this command.</param>
+        /// <param name="describeOnly">Return only columns information.</param>
+        /// <returns>Rows and columns.</returns>
         public SnowflakeRawData QueryRaw(string sql, object sqlParams = null, bool describeOnly = false)
         {
             var response = QueryInternal(sql, sqlParams, describeOnly);
@@ -127,6 +167,10 @@ namespace Snowflake.Client
             return response;
         }
 
+        /// <summary>
+        /// Closes current Snowflake session. 
+        /// </summary>
+        /// <returns>True if session was successfully closed.</returns>
         public bool CloseSession()
         {
             var closeSessionRequest = requestBuilder.BuildCloseSessionRequest();

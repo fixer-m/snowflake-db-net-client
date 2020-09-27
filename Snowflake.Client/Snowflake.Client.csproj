@@ -1,13 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFrameworks>net461;netstandard2.0;netcoreapp3.0</TargetFrameworks>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<Version>0.2.2</Version>
+		<Version>0.2.3</Version>
 		<Authors>fixer_m</Authors>
 		<Company />
-		<Description>Unofficial client for Snowflake REST API. 
-Gives more efficient and easier way to work with Snowflake compared to official library (Snowflake.Data)</Description>
+		<Description>Unofficial .NET client for Snowflake REST API.
+Provides straightforward and efficient way to execute SQL queries in Snowflake and automatically map response to your models.</Description>
 		<Copyright>Copyright (c) 2020 Ilya Bystrov.</Copyright>
 		<PackageProjectUrl>https://github.com/fixer-m/snowflake-db-net-client/</PackageProjectUrl>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>

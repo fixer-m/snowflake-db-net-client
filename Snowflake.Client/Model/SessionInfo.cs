@@ -1,5 +1,8 @@
 ﻿namespace Snowflake.Client.Model
 {
+    /// <summary>
+    /// Represents current or desired Snowflake session objects
+    /// </summary>
     public class SessionInfo
     {
         public string Role { get; set; }

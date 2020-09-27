@@ -24,7 +24,7 @@ var employees = snowflakeClient.Query<Employee>("SELECT * FROM MASTER.PUBLIC.EMP
 var employeesRawData = snowflakeClient.QueryRaw("SELECT * FROM MASTER.PUBLIC.EMPLOYEES");
 
 // Executes query and returns value of first cell as string result
-string employeesCount  = snowflakeClient.ExecuteScalar("USE ROLE ACCOUNTADMIN;");
+string useRoleResult = snowflakeClient.ExecuteScalar("USE ROLE ACCOUNTADMIN;");
 
 // Parameters binding options:
 var employeesParam_1 = snowflakeClient.Query<Employee>("SELECT * FROM EMPLOYEES WHERE TITLE = ?", "Programmer");
@@ -34,21 +34,21 @@ var employeesParam_4 = snowflakeClient.Query<Employee>("SELECT * FROM EMPLOYEES 
 ```
 
 ### Comparison with Snowflake.Data 
-Official [Snowflake.Data](https://github.com/snowflakedb/snowflake-connector-net) connector implements ADO.NET interfaces (IDbConnection, IDataReader etc), so you have to work with it as with usual database. Under the hood it actually uses Snowflake REST API. In contrast this library is designed as native client for Snowflake REST API. This approach doesn't have restrictions and limitations that official library has. As well as it gives much more freedom to develop new features. 
+Official [Snowflake.Data](https://github.com/snowflakedb/snowflake-connector-net) connector implements ADO.NET interfaces (IDbConnection, IDataReader etc), so you have to work with it as with usual database on a low level (however under the hood it actually uses Snowflake REST API). In contrast this library is designed as REST API client (or wrapper) with straightforward and clean API. 
 
 Improvements in Snowflake.Client vs Snowflake.Data: 
 - Performance: Re-uses Snowflake session, i.e. less roundtrips to SF
 - Performance: Faster json (de)serialize with System.Text.Json (vs Newtonsoft.JSON)
 - Performance: Doesn't have additional intermediate mapping from SF to DB types 
 - Better API: Clean and simple syntax vs verbose ADO.NET syntax
-- Less 3rd party dependencies, uses only MS packages 
+- Less 3rd party dependencies: 1 vs 4
 
 New features in Snowflake.Client:
 - Map response data to entities
 - Supports describeOnly flag
 - Has option to return raw data from Snowflake response
-- Exposes Snowflake session information
-- New SQL parameter binding with a few options (inspired by Dapper)
+- Exposes Snowflake session info
+- New SQL parameter binding API with a few options (inspired by Dapper)
 
 Currently missing features in Snowflake.Client:
 - Chunks downloader (for big amount of data)

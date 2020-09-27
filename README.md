@@ -44,7 +44,7 @@ Improvements in Snowflake.Client vs Snowflake.Data:
 - Performance: Faster json (de)serialize with System.Text.Json (vs Newtonsoft.JSON)
 - Performance: Doesn't have additional intermediate mapping from SF to DB types 
 - Better API: Clean and simple syntax vs verbose ADO.NET syntax
-- Less 3rd party dependencies: 1 (System.Text.Json) vs 4 
+- Less 3rd party dependencies, uses only MS packages 
 
 New features in Snowflake.Client:
 - Map response data to entities

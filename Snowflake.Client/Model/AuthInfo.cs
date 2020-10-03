@@ -1,5 +1,8 @@
 ﻿namespace Snowflake.Client.Model
 {
+    /// <summary>
+    /// Snowflake Authentication information.
+    /// </summary>
     public class AuthInfo
     {
         public string Account { get; set; }

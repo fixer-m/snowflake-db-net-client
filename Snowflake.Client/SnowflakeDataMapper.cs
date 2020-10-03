@@ -7,7 +7,13 @@ namespace Snowflake.Client
 {
     public static class SnowflakeDataMapper
     {
-        private static JsonSerializerOptions JsonMapperOptions;
+        private static JsonSerializerOptions JsonMapperOptions = new JsonSerializerOptions();
+
+        public static void SetJsonMapperOptions(JsonSerializerOptions jsonMapperOptions)
+        {
+            if (jsonMapperOptions != null)
+                JsonMapperOptions = jsonMapperOptions;
+        }
 
         public static IEnumerable<T> Map<T>(QueryExecResponseData data)
         {
@@ -39,11 +45,10 @@ namespace Snowflake.Client
 
         private static string ConvertColumnValueToJsonToken(string value, string columnType)
         {
-            // todo: strings with a " (quote)
             if (value == null || value == "null")
                 return "null";
 
-            // todo: escape special chars in json (like 0A = LF - line feed)
+            // todo: Escape '\' and '"' to have valid json
             var sfTextTypes = new List<string>() { "text", "object", "variant", "array" };
             if (sfTextTypes.Contains(columnType))
                 return '"' + value + '"';
@@ -71,12 +76,6 @@ namespace Snowflake.Client
             }
 
             return '"' + value + '"';
-        }
-
-        public static void SetJsonMapperOptions(JsonSerializerOptions jsonMapperOptions)
-        {
-            if (jsonMapperOptions != null)
-                JsonMapperOptions = jsonMapperOptions;
         }
     }
 }

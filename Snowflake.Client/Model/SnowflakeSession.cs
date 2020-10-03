@@ -3,6 +3,9 @@ using Snowflake.Client.Json;
 
 namespace Snowflake.Client
 {
+    /// <summary>
+    /// Snowflake Session information
+    /// </summary>
     public class SnowflakeSession
     {
         public string MasterToken { get; private set; }

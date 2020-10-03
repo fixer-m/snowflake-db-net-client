@@ -45,7 +45,7 @@ namespace Snowflake.Client
         /// <summary>
         /// Creates new client and initializes new Snowflake session. 
         /// </summary>
-        /// <param name="settings">Client settings to initialize session.</param>
+        /// <param name="settings">Client settings to initialize new session.</param>
         public SnowflakeClient(SnowflakeClientSettings settings)
         {
             ValidateClientSettings(settings);
@@ -129,8 +129,11 @@ namespace Snowflake.Client
         public IEnumerable<T> Query<T>(string sql, object sqlParams = null)
         {
             var response = QueryInternal(sql, sqlParams);
-            var result = SnowflakeDataMapper.Map<T>(response.Data);
 
+            if (response.Data.Chunks.Count > 0)
+                throw new SnowflakeException($"Downloading data from chunks is not implemented yet.");
+
+            var result = SnowflakeDataMapper.Map<T>(response.Data);
             return result;
         }
 

@@ -18,13 +18,16 @@ Provides straightforward and efficient way to execute SQL queries in Snowflake a
 var snowflakeClient = new SnowflakeClient("user", "password", "account", "region");
 
 // Executes query and maps response data to your class
-var employees = snowflakeClient.Query<Employee>("SELECT * FROM MASTER.PUBLIC.EMPLOYEES");
+var employees = snowflakeClient.Query<Employee>("SELECT * FROM MASTER.PUBLIC.EMPLOYEES;");
 
 // Executes query and returns raw data from response (rows and columns)
-var employeesRawData = snowflakeClient.QueryRaw("SELECT * FROM MASTER.PUBLIC.EMPLOYEES");
+var employeesRawData = snowflakeClient.QueryRaw("SELECT * FROM MASTER.PUBLIC.EMPLOYEES;");
 
 // Executes query and returns value of first cell as string result
 string useRoleResult = snowflakeClient.ExecuteScalar("USE ROLE ACCOUNTADMIN;");
+
+// Executes query and returns affected rows count
+int insertResult = snowflakeClient.Execute("INSERT INTO EMPLOYEES Title VALUES (?);", "Dev");
 
 // Parameters binding options:
 var employeesParam_1 = snowflakeClient.Query<Employee>("SELECT * FROM EMPLOYEES WHERE TITLE = ?", "Programmer");

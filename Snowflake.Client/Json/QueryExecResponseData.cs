@@ -17,7 +17,7 @@ namespace Snowflake.Client.Json
         public string FinalWarehouseName { get; set; }
         public string FinalRoleName { get; set; }
         public int NumberOfBinds { get; set; }
-        public long StatementTypeId { get; set; }
+        public int StatementTypeId { get; set; }
         public int Version { get; set; }
         public List<ExecResponseChunk> Chunks { get; set; }
         public string Qrmk { get; set; }

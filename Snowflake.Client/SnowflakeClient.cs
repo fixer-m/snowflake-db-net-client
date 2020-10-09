@@ -120,6 +120,20 @@ namespace Snowflake.Client
         }
 
         /// <summary>
+        /// Execute parameterized SQL.
+        /// </summary>
+        /// <param name="sql">The SQL to execute for this query.</param>
+        /// <param name="sqlParams">The parameters to use for this query.</param>
+        /// <returns>The number of rows affected.</returns>
+        public long Execute(string sql, object sqlParams = null)
+        {
+            var response = QueryInternal(sql, sqlParams);
+            long affectedRows = SnowflakeUtils.GetAffectedRowsCount(response);
+
+            return affectedRows;
+        }
+
+        /// <summary>
         /// Executes a query, returning the data typed as <typeparamref name="T"/>.
         /// </summary>
         /// <typeparam name="T">The type of results to return.</typeparam>
@@ -130,7 +144,7 @@ namespace Snowflake.Client
         {
             var response = QueryInternal(sql, sqlParams);
 
-            if (response.Data.Chunks.Count > 0)
+            if (response.Data.Chunks != null && response.Data.Chunks.Count > 0)
                 throw new SnowflakeException($"Downloading data from chunks is not implemented yet.");
 
             var result = SnowflakeDataMapper.Map<T>(response.Data);
@@ -148,7 +162,7 @@ namespace Snowflake.Client
         {
             var response = QueryInternal(sql, sqlParams, describeOnly);
 
-            if (response.Data.Chunks.Count > 0)
+            if (response.Data.Chunks != null && response.Data.Chunks.Count > 0)
                 throw new SnowflakeException($"Downloading data from chunks is not implemented yet.");
 
             var result = new SnowflakeRawData()

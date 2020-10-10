@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>net461;netstandard2.0;netcoreapp3.0</TargetFrameworks>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<Version>0.2.3</Version>
+		<Version>0.2.4</Version>
 		<Authors>fixer_m</Authors>
 		<Company />
 		<Description>Unofficial .NET client for Snowflake REST API.

@@ -5,7 +5,7 @@
 
 ## Snowflake.Client
 Unofficial .NET client for [Snowflake](https://www.snowflake.com) REST API.  
-Provides straightforward and efficient way to execute SQL queries in Snowflake and automatically maps response to your models.  
+Execute SQL queries in Snowflake and get mapped response back.  
 Read [blog post](https://medium.com/@fixer_m/better-net-client-for-snowflake-db-ecb48c48c872) about it. 
 
 ### Main Features
@@ -42,7 +42,6 @@ Official [Snowflake.Data](https://github.com/snowflakedb/snowflake-connector-net
 
 Improvements in Snowflake.Client vs Snowflake.Data: 
 - Performance: Re-uses Snowflake session, i.e. less roundtrips to SF
-- Performance: Faster json (de)serialize with System.Text.Json (vs Newtonsoft.JSON)
 - Performance: Doesn't have additional intermediate mapping from SF to DB types 
 - Better API: Clean and simple syntax vs verbose ADO.NET syntax
 - Less 3rd party dependencies: 1 vs 4

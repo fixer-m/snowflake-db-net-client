@@ -5,7 +5,8 @@
 
 ## Snowflake.Client
 Unofficial .NET client for [Snowflake](https://www.snowflake.com) REST API.  
-Provides straightforward and efficient way to execute SQL queries in Snowflake and automatically maps response to your models. 
+Provides straightforward and efficient way to execute SQL queries in Snowflake and automatically maps response to your models.  
+Read [blog post](https://medium.com/@fixer_m/better-net-client-for-snowflake-db-ecb48c48c872) about it. 
 
 ### Main Features
 - Basic authentication
@@ -37,7 +38,7 @@ var employeesParam_4 = snowflakeClient.Query<Employee>("SELECT * FROM EMPLOYEES 
 ```
 
 ### Comparison with Snowflake.Data 
-Official [Snowflake.Data](https://github.com/snowflakedb/snowflake-connector-net) connector implements ADO.NET interfaces (IDbConnection, IDataReader etc), so you have to work with it as with usual database on a low level (however under the hood it actually uses Snowflake REST API). In contrast this library is designed as REST API client (or wrapper) with straightforward and clean API. 
+Official [Snowflake.Data](https://github.com/snowflakedb/snowflake-connector-net) connector implements ADO.NET interfaces (IDbConnection, IDataReader etc), so you have to work with it as with usual database on a low level (however under the hood it actually uses Snowflake REST API). In contrast this library is designed as REST API client (or wrapper) with straightforward and clean API. [Read more](https://medium.com/@fixer_m/better-net-client-for-snowflake-db-ecb48c48c872) about it.
 
 Improvements in Snowflake.Client vs Snowflake.Data: 
 - Performance: Re-uses Snowflake session, i.e. less roundtrips to SF

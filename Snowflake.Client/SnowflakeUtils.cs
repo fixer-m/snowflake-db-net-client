@@ -26,6 +26,7 @@ namespace Snowflake.Client
                 case SnowflakeStatementType.MULTI_INSERT:
                     updateCount = response.Data.RowSet[0].Sum(cell => long.Parse(cell));
                     break;
+
                 case SnowflakeStatementType.COPY:
                     var rowsLoadedColumn = response.Data.RowType.FirstOrDefault(c => c.Name == "rows_loaded");
                     if (rowsLoadedColumn != null)
@@ -34,9 +35,11 @@ namespace Snowflake.Client
                         updateCount = long.Parse(response.Data.RowSet[0][rowsLoadedColumnIndex]);
                     }
                     break;
+
                 case SnowflakeStatementType.SELECT:
                     updateCount = -1;
                     break;
+
                 default:
                     updateCount = 0;
                     break;

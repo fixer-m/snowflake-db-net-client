@@ -151,7 +151,7 @@ namespace Snowflake.Client
 
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/snowflake"));
             request.Headers.UserAgent.Add(new ProductInfoHeaderValue(clientInfo.DriverName, clientInfo.DriverVersion));
-            request.Headers.UserAgent.Add(new ProductInfoHeaderValue("(" + clientInfo.Environment.OSVersion + ")"));
+            request.Headers.UserAgent.Add(new ProductInfoHeaderValue(clientInfo.Environment.OSVersion));
             request.Headers.UserAgent.Add(new ProductInfoHeaderValue(clientInfo.Environment.NETRuntime, clientInfo.Environment.NETVersion));
 
             return request;

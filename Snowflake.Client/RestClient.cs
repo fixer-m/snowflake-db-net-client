@@ -1,5 +1,6 @@
 ﻿using System.Net.Http;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Snowflake.Client
 {
@@ -24,6 +25,17 @@ namespace Snowflake.Client
             response.EnsureSuccessStatusCode();
 
             var json = response.Content.ReadAsStringAsync().Result;
+
+            return JsonSerializer.Deserialize<T>(json, jsonSerializerOptions);
+        }
+
+        public async Task<T> SendAsync<T>(HttpRequestMessage request)
+        {
+            var response = await httpClient.SendAsync(request).ConfigureAwait(false);
+
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
             return JsonSerializer.Deserialize<T>(json, jsonSerializerOptions);
         }

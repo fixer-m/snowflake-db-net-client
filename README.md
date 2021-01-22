@@ -17,24 +17,25 @@ Read [blog post](https://medium.com/@fixer_m/better-net-client-for-snowflake-db-
 ```csharp
 // Creates new client and initializes new session 
 var snowflakeClient = new SnowflakeClient("user", "password", "account", "region");
+var sessionInitalized = await snowflakeClient.InitSessionAsync();
 
 // Executes query and maps response data to your class
-var employees = snowflakeClient.Query<Employee>("SELECT * FROM MASTER.PUBLIC.EMPLOYEES;");
+var employees = await snowflakeClient.QueryAsync<Employee>("SELECT * FROM MASTER.PUBLIC.EMPLOYEES;");
 
 // Executes query and returns raw data from response (rows and columns)
-var employeesRawData = snowflakeClient.QueryRaw("SELECT * FROM MASTER.PUBLIC.EMPLOYEES;");
+var employeesRawData = await snowflakeClient.QueryRawAsync("SELECT * FROM MASTER.PUBLIC.EMPLOYEES;");
 
 // Executes query and returns value of first cell as string result
-string useRoleResult = snowflakeClient.ExecuteScalar("USE ROLE ACCOUNTADMIN;");
+string useRoleResult = await snowflakeClient.ExecuteScalarAsync("USE ROLE ACCOUNTADMIN;");
 
 // Executes query and returns affected rows count
-int insertResult = snowflakeClient.Execute("INSERT INTO EMPLOYEES Title VALUES (?);", "Dev");
+int insertResult = await snowflakeClient.ExecuteAsync("INSERT INTO EMPLOYEES Title VALUES (?);", "Dev");
 
 // Parameters binding options:
-var employeesParam_1 = snowflakeClient.Query<Employee>("SELECT * FROM EMPLOYEES WHERE TITLE = ?", "Programmer");
-var employeesParam_2 = snowflakeClient.Query<Employee>("SELECT * FROM EMPLOYEES WHERE ID IN (?,?)", new int[] { 1, 2 });
-var employeesParam_3 = snowflakeClient.Query<Employee>("SELECT * FROM EMPLOYEES WHERE TITLE = :Title", new Employee() { Title = "Programmer" });
-var employeesParam_4 = snowflakeClient.Query<Employee>("SELECT * FROM EMPLOYEES WHERE TITLE = :Title", new { Title = "Programmer" });
+var employeesParam_1 = await snowflakeClient.QueryAsync<Employee>("SELECT * FROM EMPLOYEES WHERE TITLE = ?", "Programmer");
+var employeesParam_2 = await snowflakeClient.QueryAsync<Employee>("SELECT * FROM EMPLOYEES WHERE ID IN (?,?)", new int[] { 1, 2 });
+var employeesParam_3 = await snowflakeClient.QueryAsync<Employee>("SELECT * FROM EMPLOYEES WHERE TITLE = :Title", new Employee() { Title = "Programmer" });
+var employeesParam_4 = await snowflakeClient.QueryAsync<Employee>("SELECT * FROM EMPLOYEES WHERE TITLE = :Title", new { Title = "Programmer" });
 ```
 
 ### Comparison with Snowflake.Data 

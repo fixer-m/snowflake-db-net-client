@@ -6,7 +6,9 @@
 ## Snowflake.Client
 Unofficial .NET client for [Snowflake](https://www.snowflake.com) REST API.  
 Execute SQL queries in Snowflake and get mapped response back.  
-Read [blog post](https://medium.com/@fixer_m/better-net-client-for-snowflake-db-ecb48c48c872) about it. 
+Read my [blog post](https://medium.com/@fixer_m/better-net-client-for-snowflake-db-ecb48c48c872) about it. 
+
+Snowflake DB does have REST API, but it doesn't have API documentation, so I have reverse-engineered it. 
 
 ### Main Features
 - Basic authentication
@@ -45,7 +47,7 @@ Improvements in Snowflake.Client vs Snowflake.Data:
 - Performance: Re-uses Snowflake session, i.e. less roundtrips to SF
 - Performance: Doesn't have additional intermediate mapping from SF to DB types 
 - Better API: Clean and simple syntax vs verbose ADO.NET syntax
-- Less 3rd party dependencies: 1 vs 4
+- Third party dependencies: 0 vs 4
 
 New features in Snowflake.Client:
 - Map response data to entities
@@ -68,6 +70,7 @@ PM> Install-Package Snowflake.Client
 ### Road Map 
 - [Done] Async API 
 - [In Progress] Unit tests
+- Integration tests
 - Chunks downloader (for big amount of data)
 - Auto-renew session 
 - OKTA Authentication

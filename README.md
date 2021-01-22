@@ -55,9 +55,8 @@ New features in Snowflake.Client:
 - New SQL parameter binding API with a few options (inspired by Dapper)
 
 Currently missing features in Snowflake.Client:
-- Chunks downloader (for big amount of data)
+- Chunks downloader (to download big amount of data)
 - Auto-renew session 
-- Async API
 - OKTA Authentication
 
 ### Installation
@@ -67,10 +66,10 @@ PM> Install-Package Snowflake.Client
 ```
 
 ### Road Map 
+- [Done] Async API 
+- [In Progress] Unit tests
 - Chunks downloader (for big amount of data)
 - Auto-renew session 
-- Async API
 - OKTA Authentication
-- Unit tests
 - Query cancellation
 - Mapper documentation

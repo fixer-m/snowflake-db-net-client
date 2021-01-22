@@ -3,6 +3,7 @@ using Snowflake.Client.Model;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Snowflake.Client
 {
@@ -54,8 +55,6 @@ namespace Snowflake.Client
             restClient = new RestClient();
             requestBuilder = new RequestBuilder(settings.UrlInfo);
             SnowflakeDataMapper.SetJsonMapperOptions(settings.JsonMapperOptions);
-
-            CreateNewSession(settings.AuthInfo, settings.SessionInfo);
         }
 
         private void ValidateClientSettings(SnowflakeClientSettings settings)
@@ -85,19 +84,19 @@ namespace Snowflake.Client
         /// <param name="authInfo">Auth information: user, password, account, region</param>
         /// <param name="sessionInfo">Session information: role, schema, database, warehouse</param>
         /// <returns>True</returns>
-        public bool CreateNewSession(AuthInfo authInfo, SessionInfo sessionInfo)
+        public async Task<bool> InitSessionAsync()
         {
-            session = Authenticate(authInfo, sessionInfo);
+            session = await AuthenticateAsync(clientSettings.AuthInfo, clientSettings.SessionInfo).ConfigureAwait(false);
             requestBuilder.SetSessionToken(session.SessionToken);
 
             return true;
         }
 
-        private SnowflakeSession Authenticate(AuthInfo authInfo, SessionInfo sessionInfo)
+        private async Task<SnowflakeSession> AuthenticateAsync(AuthInfo authInfo, SessionInfo sessionInfo)
         {
             var loginRequest = requestBuilder.BuildLoginRequest(authInfo, sessionInfo);
 
-            var response = restClient.Send<LoginResponse>(loginRequest);
+            var response = await restClient.SendAsync<LoginResponse>(loginRequest).ConfigureAwait(false);
 
             if (!response.Success)
                 throw new SnowflakeException($"Athentication failed. Message: {response.Message}", response.Code);
@@ -111,9 +110,9 @@ namespace Snowflake.Client
         /// <param name="sql">The SQL to execute.</param>
         /// <param name="sqlParams">The parameters to use for this command.</param>
         /// <returns>The first cell value returned as string.</returns>
-        public string ExecuteScalar(string sql, object sqlParams = null)
+        public async Task<string> ExecuteScalarAsync(string sql, object sqlParams = null)
         {
-            var response = QueryInternal(sql, sqlParams);
+            var response = await QueryInternalAsync(sql, sqlParams).ConfigureAwait(false);
             var rawResult = response.Data.RowSet[0][0];
 
             return rawResult;
@@ -125,9 +124,9 @@ namespace Snowflake.Client
         /// <param name="sql">The SQL to execute for this query.</param>
         /// <param name="sqlParams">The parameters to use for this query.</param>
         /// <returns>The number of rows affected.</returns>
-        public long Execute(string sql, object sqlParams = null)
+        public async Task<long> ExecuteAsync(string sql, object sqlParams = null)
         {
-            var response = QueryInternal(sql, sqlParams);
+            var response = await QueryInternalAsync(sql, sqlParams).ConfigureAwait(false);
             long affectedRows = SnowflakeUtils.GetAffectedRowsCount(response);
 
             return affectedRows;
@@ -140,9 +139,9 @@ namespace Snowflake.Client
         /// <param name="sql">The SQL to execute.</param>
         /// <param name="sqlParams">The parameters to use for this command.</param>
         /// <returns>A sequence of data of the supplied type: one instance per row.</returns>
-        public IEnumerable<T> Query<T>(string sql, object sqlParams = null)
+        public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object sqlParams = null)
         {
-            var response = QueryInternal(sql, sqlParams);
+            var response = await QueryInternalAsync(sql, sqlParams).ConfigureAwait(false);
 
             if (response.Data.Chunks != null && response.Data.Chunks.Count > 0)
                 throw new SnowflakeException($"Downloading data from chunks is not implemented yet.");
@@ -158,9 +157,9 @@ namespace Snowflake.Client
         /// <param name="sqlParams">The parameters to use for this command.</param>
         /// <param name="describeOnly">Return only columns information.</param>
         /// <returns>Rows and columns.</returns>
-        public SnowflakeRawData QueryRaw(string sql, object sqlParams = null, bool describeOnly = false)
+        public async Task<SnowflakeRawData> QueryRawAsync(string sql, object sqlParams = null, bool describeOnly = false)
         {
-            var response = QueryInternal(sql, sqlParams, describeOnly);
+            var response = await QueryInternalAsync(sql, sqlParams, describeOnly).ConfigureAwait(false);
 
             if (response.Data.Chunks != null && response.Data.Chunks.Count > 0)
                 throw new SnowflakeException($"Downloading data from chunks is not implemented yet.");
@@ -174,10 +173,10 @@ namespace Snowflake.Client
             return result;
         }
 
-        private QueryExecResponse QueryInternal(string sql, object sqlParams = null, bool describeOnly = false)
+        private async Task<QueryExecResponse> QueryInternalAsync(string sql, object sqlParams = null, bool describeOnly = false)
         {
             var queryRequest = requestBuilder.BuildQueryRequest(sql, sqlParams, describeOnly);
-            var response = restClient.Send<QueryExecResponse>(queryRequest);
+            var response = await restClient.SendAsync<QueryExecResponse>(queryRequest).ConfigureAwait(false);
 
             if (!response.Success)
                 throw new SnowflakeException($"Query execution failed. Message: {response.Message}", response.Code);
@@ -189,10 +188,10 @@ namespace Snowflake.Client
         /// Closes current Snowflake session. 
         /// </summary>
         /// <returns>True if session was successfully closed.</returns>
-        public bool CloseSession()
+        public async Task<bool> CloseSessionAsync()
         {
             var closeSessionRequest = requestBuilder.BuildCloseSessionRequest();
-            var response = restClient.Send<CloseResponse>(closeSessionRequest);
+            var response = await restClient.SendAsync<CloseResponse>(closeSessionRequest).ConfigureAwait(false);
 
             if (!response.Success)
                 throw new SnowflakeException($"Closing session failed. Message: {response.Message}", response.Code);

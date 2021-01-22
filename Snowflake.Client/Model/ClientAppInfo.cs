@@ -23,9 +23,9 @@ namespace Snowflake.Client
 #endif
             };
 
-            // Pretend that we are official .NET connector - just in case
+            // Pretend that we are official .NET connector
             DriverVersion = "1.1.4"; // System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            DriverName = ".NET";
+            DriverName = ".NET"; // Doesn't allow anything else :(
         }
     }
 }

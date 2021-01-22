@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Snowflake.Client
 {
-    // Bindings https://docs.snowflake.com/en/user-guide/python-connector-api.html
+    // Bindings: https://docs.snowflake.com/en/user-guide/python-connector-api.html
     // Based on https://github.com/snowflakedb/snowflake-connector-net/blob/master/Snowflake.Data/Core/SFDataConverter.cs
     public static class ParameterBinder
     {
@@ -21,7 +21,7 @@ namespace Snowflake.Client
 
             if (IsSimpleType(paramType))
             {
-                var binding = GetParamFromSimpleType(param, paramType);
+                var binding = BuildParamFromSimpleType(param, paramType);
                 bindings.Add("1", binding);
                 return bindings;
             }
@@ -35,13 +35,13 @@ namespace Snowflake.Client
                 foreach (var item in enumInterface)
                 {
                     i++;
-                    bindings.Add(i.ToString(), GetParamFromSimpleType(item, elementType));
+                    bindings.Add(i.ToString(), BuildParamFromSimpleType(item, elementType));
                 }
 
                 return bindings;
             }
 
-            bindings = GetParamsFromComplexType(param, paramType);
+            bindings = BuildParamsFromComplexType(param, paramType);
 
             return bindings;
         }
@@ -62,11 +62,11 @@ namespace Snowflake.Client
             if (underlyingType != null)
                 paramType = underlyingType;
 
-            // Will treat struct as simple class.
+            // Will treat struct as "simple" class.
             return paramType == typeof(string) || !paramType.IsClass || paramType == typeof(byte[]);
         }
 
-        private static Dictionary<string, ParamBinding> GetParamsFromComplexType(object param, Type paramType)
+        private static Dictionary<string, ParamBinding> BuildParamsFromComplexType(object param, Type paramType)
         {
             var result = new Dictionary<string, ParamBinding>();
             var typeProperties = paramType.GetProperties().Where(p => IsSimpleType(p.PropertyType)).ToList();
@@ -74,20 +74,20 @@ namespace Snowflake.Client
             foreach (var property in typeProperties)
             {
                 var propValue = property.GetValue(param);
-                var binding = GetParamFromSimpleType(propValue, property.PropertyType);
+                var binding = BuildParamFromSimpleType(propValue, property.PropertyType);
                 result.Add(property.Name, binding);
             }
 
             return result;
         }
 
-        private static ParamBinding GetParamFromSimpleType(object param, Type paramType)
+        private static ParamBinding BuildParamFromSimpleType(object param, Type paramType)
         {
             var underlyingType = Nullable.GetUnderlyingType(paramType);
             if (underlyingType != null)
                 paramType = underlyingType;
 
-            var stringValue = param == null ? null : String.Format(CultureInfo.InvariantCulture, "{0}", param);
+            var stringValue = param == null ? null : string.Format(CultureInfo.InvariantCulture, "{0}", param);
 
             if (TextTypes.Contains(paramType))
                 return new ParamBinding() { Type = "TEXT", Value = stringValue };

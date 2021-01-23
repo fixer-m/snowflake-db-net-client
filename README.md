@@ -47,7 +47,7 @@ Improvements in Snowflake.Client vs Snowflake.Data:
 - Better API: Clean and simple syntax vs verbose ADO.NET syntax
 - Third party dependencies: 0 vs 4
 
-New features in Snowflake.Client vs Snowflake.Data:
+Added features in Snowflake.Client vs Snowflake.Data:
 - Map response data to entities
 - Supports describeOnly flag
 - Has option to return raw data from Snowflake response

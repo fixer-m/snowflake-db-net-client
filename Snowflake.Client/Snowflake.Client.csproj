@@ -1,23 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFrameworks>net461;netstandard2.0;netcoreapp3.1</TargetFrameworks>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<Version>0.2.4</Version>
-		<Authors>fixer_m</Authors>
-		<Company />
-		<Description>Unofficial .NET client for Snowflake REST API.
-Provides straightforward and efficient way to execute SQL queries in Snowflake and automatically map response to your models.</Description>
-		<Copyright>Copyright (c) 2020 Ilya Bystrov.</Copyright>
-		<PackageProjectUrl>https://github.com/fixer-m/snowflake-db-net-client/</PackageProjectUrl>
-		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-		<RepositoryUrl>https://github.com/fixer-m/snowflake-db-net-client/</RepositoryUrl>
-		<PackageTags>snowflake;client;api;wrapper;snowflakedb;rest;restapi</PackageTags>
-	</PropertyGroup>
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;netcoreapp3.1</TargetFrameworks>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.3.0</Version>
+    <Authors>fixer_m</Authors>
+    <Description>
+      Unofficial .NET client for Snowflake REST API.
+      Provides straightforward and efficient way to execute SQL queries in Snowflake and automatically map response to your models.
+    </Description>
+    <Copyright>Copyright (c) 2020-2021 Ilya Bystrov</Copyright>
+    <PackageProjectUrl>https://github.com/fixer-m/snowflake-db-net-client/</PackageProjectUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/fixer-m/snowflake-db-net-client/</RepositoryUrl>
+    <PackageTags>snowflake;client;api;wrapper;snowflakedb;rest;restapi</PackageTags>
+  </PropertyGroup>
 
-	<ItemGroup Condition=" '$(TargetFramework)' == 'net461' OR '$(TargetFramework)' == 'netstandard2.0'">
-		<PackageReference Include="System.Text.Json" Version="4.6.0" />
-		<Reference Include="System.Web" />
-	</ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="System.Text.Json" Version="4.6.0" />
+  </ItemGroup>
 
 </Project>

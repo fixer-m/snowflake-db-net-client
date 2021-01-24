@@ -6,7 +6,7 @@ using Snowflake.Client.Model;
 namespace Snowflake.Client
 {
     // Based on https://github.com/snowflakedb/snowflake-connector-net/blob/master/Snowflake.Data/Core/ResultSetUtil.cs
-    public class SnowflakeUtils
+    public static class SnowflakeUtils
     {
         public static long GetAffectedRowsCount(QueryExecResponse response)
         {

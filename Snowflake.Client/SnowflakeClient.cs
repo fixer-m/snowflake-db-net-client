@@ -2,6 +2,7 @@
 using Snowflake.Client.Model;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -20,7 +21,7 @@ namespace Snowflake.Client
         private readonly SnowflakeClientSettings clientSettings;
 
         /// <summary>
-        /// Creates new client and initializes new Snowflake session. 
+        /// Creates new Snowflake client. 
         /// </summary>
         /// <param name="user">Username</param>
         /// <param name="password">Password</param>
@@ -32,7 +33,7 @@ namespace Snowflake.Client
         }
 
         /// <summary>
-        /// Creates new client and initializes new Snowflake session. 
+        /// Creates new Snowflake client. 
         /// </summary>
         /// <param name="authInfo">Auth information: user, password, account, region</param>
         /// <param name="sessionInfo">Session information: role, schema, database, warehouse</param>
@@ -44,7 +45,7 @@ namespace Snowflake.Client
         }
 
         /// <summary>
-        /// Creates new client and initializes new Snowflake session. 
+        /// Creates new Snowflake client. 
         /// </summary>
         /// <param name="settings">Client settings to initialize new session.</param>
         public SnowflakeClient(SnowflakeClientSettings settings)
@@ -83,7 +84,7 @@ namespace Snowflake.Client
         /// </summary>
         /// <param name="authInfo">Auth information: user, password, account, region</param>
         /// <param name="sessionInfo">Session information: role, schema, database, warehouse</param>
-        /// <returns>True</returns>
+        /// <returns>True if session succesfully initialized</returns>
         public async Task<bool> InitSessionAsync()
         {
             session = await AuthenticateAsync(clientSettings.AuthInfo, clientSettings.SessionInfo).ConfigureAwait(false);
@@ -113,7 +114,7 @@ namespace Snowflake.Client
         public async Task<string> ExecuteScalarAsync(string sql, object sqlParams = null)
         {
             var response = await QueryInternalAsync(sql, sqlParams).ConfigureAwait(false);
-            var rawResult = response.Data.RowSet[0][0];
+            var rawResult = response.Data.RowSet.FirstOrDefault()?.FirstOrDefault();
 
             return rawResult;
         }
@@ -146,31 +147,22 @@ namespace Snowflake.Client
             if (response.Data.Chunks != null && response.Data.Chunks.Count > 0)
                 throw new SnowflakeException($"Downloading data from chunks is not implemented yet.");
 
-            var result = SnowflakeDataMapper.Map<T>(response.Data);
+            var result = SnowflakeDataMapper.MapTo<T>(response.Data.RowType, response.Data.RowSet);
             return result;
         }
 
         /// <summary>
-        /// Executes a query, returning the raw data returned by REST API (rows and columns).
+        /// Executes a query, returning the raw data returned by REST API (rows, columns and query information).
         /// </summary>
         /// <param name="sql">The SQL to execute.</param>
         /// <param name="sqlParams">The parameters to use for this command.</param>
         /// <param name="describeOnly">Return only columns information.</param>
         /// <returns>Rows and columns.</returns>
-        public async Task<SnowflakeRawData> QueryRawAsync(string sql, object sqlParams = null, bool describeOnly = false)
+        public async Task<QueryExecResponseData> QueryRawAsync(string sql, object sqlParams = null, bool describeOnly = false)
         {
             var response = await QueryInternalAsync(sql, sqlParams, describeOnly).ConfigureAwait(false);
 
-            if (response.Data.Chunks != null && response.Data.Chunks.Count > 0)
-                throw new SnowflakeException($"Downloading data from chunks is not implemented yet.");
-
-            var result = new SnowflakeRawData()
-            {
-                Columns = response.Data.RowType,
-                Rows = response.Data.RowSet
-            };
-
-            return result;
+            return response.Data;
         }
 
         private async Task<QueryExecResponse> QueryInternalAsync(string sql, object sqlParams = null, bool describeOnly = false)

@@ -15,11 +15,15 @@ namespace Snowflake.Client
                 JsonMapperOptions = jsonMapperOptions;
         }
 
-        public static IEnumerable<T> Map<T>(QueryExecResponseData data)
+        public static IEnumerable<T> MapTo<T>(List<ColumnDescription> columns, List<List<string>> rows)
         {
-            var columns = data.RowType;
+            if (columns == null || columns.Count == 0)
+                throw new Exception("Columns argument should be not empty.");
 
-            foreach (var rowRecord in data.RowSet)
+            if (rows == null)
+                throw new ArgumentNullException(nameof(rows));
+
+            foreach (var rowRecord in rows)
             {
                 var jsonString = BuildJsonString(columns, rowRecord);
                 yield return JsonSerializer.Deserialize<T>(jsonString, JsonMapperOptions);

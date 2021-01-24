@@ -54,14 +54,16 @@ namespace Snowflake.Client
 
         public static string ConvertToTimestampTz(DateTimeOffset value)
         {
-            var ticksPart = (value.UtcTicks - UnixEpoch.Ticks) * 100L;
+            var ticksPart = value.UtcTicks - UnixEpoch.Ticks;
             var minutesPart = value.Offset.TotalMinutes + 1440;
-            return $"{ticksPart} {minutesPart}";
+
+            return $"{ticksPart}00 {minutesPart}";
         }
 
         public static string ConvertToTimestampNtz(DateTime value)
         {
             var diff = value.Subtract(UnixEpoch);
+
             return $"{diff.Ticks}00";
         }
 

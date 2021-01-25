@@ -8,17 +8,17 @@ using System.Threading.Tasks;
 
 namespace Snowflake.Client
 {
-    public class SnowflakeClient
+    public class SnowflakeClient : ISnowflakeClient
     {
         /// <summary>
         /// Current Snowflake session.
         /// </summary>
-        public SnowflakeSession SnowflakeSession { get => session; }
+        public SnowflakeSession SnowflakeSession { get => _session; }
 
-        private SnowflakeSession session;
-        private readonly RestClient restClient;
-        private readonly RequestBuilder requestBuilder;
-        private readonly SnowflakeClientSettings clientSettings;
+        private SnowflakeSession _session;
+        private readonly RestClient _restClient;
+        private readonly RequestBuilder _requestBuilder;
+        private readonly SnowflakeClientSettings _clientSettings;
 
         /// <summary>
         /// Creates new Snowflake client. 
@@ -52,9 +52,9 @@ namespace Snowflake.Client
         {
             ValidateClientSettings(settings);
 
-            clientSettings = settings;
-            restClient = new RestClient();
-            requestBuilder = new RequestBuilder(settings.UrlInfo);
+            _clientSettings = settings;
+            _restClient = new RestClient();
+            _requestBuilder = new RequestBuilder(settings.UrlInfo);
             SnowflakeDataMapper.SetJsonMapperOptions(settings.JsonMapperOptions);
         }
 
@@ -85,19 +85,19 @@ namespace Snowflake.Client
         /// <param name="authInfo">Auth information: user, password, account, region</param>
         /// <param name="sessionInfo">Session information: role, schema, database, warehouse</param>
         /// <returns>True if session succesfully initialized</returns>
-        public async Task<bool> InitSessionAsync()
+        public async Task<bool> InitNewSessionAsync()
         {
-            session = await AuthenticateAsync(clientSettings.AuthInfo, clientSettings.SessionInfo).ConfigureAwait(false);
-            requestBuilder.SetSessionToken(session.SessionToken);
+            _session = await AuthenticateAsync(_clientSettings.AuthInfo, _clientSettings.SessionInfo).ConfigureAwait(false);
+            _requestBuilder.SetSessionToken(_session.SessionToken);
 
             return true;
         }
 
         private async Task<SnowflakeSession> AuthenticateAsync(AuthInfo authInfo, SessionInfo sessionInfo)
         {
-            var loginRequest = requestBuilder.BuildLoginRequest(authInfo, sessionInfo);
+            var loginRequest = _requestBuilder.BuildLoginRequest(authInfo, sessionInfo);
 
-            var response = await restClient.SendAsync<LoginResponse>(loginRequest).ConfigureAwait(false);
+            var response = await _restClient.SendAsync<LoginResponse>(loginRequest).ConfigureAwait(false);
 
             if (!response.Success)
                 throw new SnowflakeException($"Athentication failed. Message: {response.Message}", response.Code);
@@ -158,17 +158,24 @@ namespace Snowflake.Client
         /// <param name="sqlParams">The parameters to use for this command.</param>
         /// <param name="describeOnly">Return only columns information.</param>
         /// <returns>Rows and columns.</returns>
-        public async Task<QueryExecResponseData> QueryRawAsync(string sql, object sqlParams = null, bool describeOnly = false)
+        public async Task<SnowflakeQueryRawResponse> QueryRawResponseAsync(string sql, object sqlParams = null, bool describeOnly = false)
         {
             var response = await QueryInternalAsync(sql, sqlParams, describeOnly).ConfigureAwait(false);
 
-            return response.Data;
+            return new SnowflakeQueryRawResponse(response.Data);
+        }
+
+        private async Task<bool> EnsureSessionIniatializedAsync()
+        {
+            return _session == null ? await InitNewSessionAsync().ConfigureAwait(false) : true;
         }
 
         private async Task<QueryExecResponse> QueryInternalAsync(string sql, object sqlParams = null, bool describeOnly = false)
         {
-            var queryRequest = requestBuilder.BuildQueryRequest(sql, sqlParams, describeOnly);
-            var response = await restClient.SendAsync<QueryExecResponse>(queryRequest).ConfigureAwait(false);
+            await EnsureSessionIniatializedAsync().ConfigureAwait(false);
+
+            var queryRequest = _requestBuilder.BuildQueryRequest(sql, sqlParams, describeOnly);
+            var response = await _restClient.SendAsync<QueryExecResponse>(queryRequest).ConfigureAwait(false);
 
             if (!response.Success)
                 throw new SnowflakeException($"Query execution failed. Message: {response.Message}", response.Code);
@@ -182,13 +189,14 @@ namespace Snowflake.Client
         /// <returns>True if session was successfully closed.</returns>
         public async Task<bool> CloseSessionAsync()
         {
-            var closeSessionRequest = requestBuilder.BuildCloseSessionRequest();
-            var response = await restClient.SendAsync<CloseResponse>(closeSessionRequest).ConfigureAwait(false);
+            var closeSessionRequest = _requestBuilder.BuildCloseSessionRequest();
+            var response = await _restClient.SendAsync<CloseResponse>(closeSessionRequest).ConfigureAwait(false);
+
+            _session = null;
+            _requestBuilder.ClearSessionToken();
 
             if (!response.Success)
                 throw new SnowflakeException($"Closing session failed. Message: {response.Message}", response.Code);
-
-            requestBuilder.ClearSessionToken();
 
             return response.Success;
         }

@@ -49,5 +49,10 @@ namespace Snowflake.Client
             this.WarehouseName = loginResponseData.SessionInfo.WarehouseName;
             this.RoleName = loginResponseData.SessionInfo.RoleName;
         }
+
+        public override string ToString()
+        {
+            return $"User: {DisplayUserName}; Role: {RoleName}; Warehouse: {WarehouseName}";
+        }
     }
 }

@@ -28,7 +28,7 @@ var queryRawResponse = await snowflakeClient.QueryRawResponseAsync("SELECT * FRO
 string useRoleResult = await snowflakeClient.ExecuteScalarAsync("USE ROLE ACCOUNTADMIN;");
 
 // Executes query and returns affected rows count
-int insertResult = await snowflakeClient.ExecuteAsync("INSERT INTO EMPLOYEES Title VALUES (?);", "Dev");
+int affectedRows = await snowflakeClient.ExecuteAsync("INSERT INTO EMPLOYEES Title VALUES (?);", "Dev");
 
 // Parameters binding options:
 var employees1 = await snowflakeClient.QueryAsync<Employee>("SELECT * FROM EMPLOYEES WHERE TITLE = ?", "Programmer");

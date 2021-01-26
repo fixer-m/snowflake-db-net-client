@@ -59,7 +59,7 @@ Missing features in Snowflake.Client vs Snowflake.Data:
 - OKTA Authentication
 
 ### Mapping basics
-Use `QueryAsync<T>` method to get response data automatically mapped to your model (T): 
+Use `QueryAsync<T>` method to get response data automatically mapped to your model (`T`): 
 ```csharp
 // Executes query and maps response data to "Employee" class
 var employees = await snowflakeClient.QueryAsync<Employee>("SELECT * FROM MASTER.PUBLIC.EMPLOYEES;");
@@ -73,7 +73,8 @@ public class Employee
 }
 ```
 
-Internally it uses [`System.Text.Json`](https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-apis/) to deserialize Snowflake data to your model. It uses [default deserialize behavior](https://docs.microsoft.com/ru-ru/dotnet/api/system.text.json.jsonserializer.deserialize?view=net-5.0), except `PropertyNameCaseInsensitive` is set to **true**. You can override this behavior by providing custom `JsonSerializerOptions`. You can pass it in `SnowflakeClient` constructor or you can set it directly via `SnowflakeDataMapper.SetJsonMapperOptions(jsonSerializerOptions)`.
+Internally it uses [`System.Text.Json`](https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-apis/) to deserialize Snowflake data to your model. It uses [default deserialize behavior](https://docs.microsoft.com/ru-ru/dotnet/api/system.text.json.jsonserializer.deserialize?view=net-5.0), except `PropertyNameCaseInsensitive` is set to **true**.  
+You can override this behavior by providing custom `JsonSerializerOptions`. You can pass it in `SnowflakeClient` constructor or you can set it directly via `SnowflakeDataMapper.SetJsonMapperOptions(jsonSerializerOptions)`.
 
 If you want you can use `SnowflakeDataMapper.MapTo<T>` to map Snowflake data response manually: 
 ```csharp

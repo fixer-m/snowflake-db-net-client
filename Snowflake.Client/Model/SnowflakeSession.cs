@@ -50,6 +50,16 @@ namespace Snowflake.Client
             this.RoleName = loginResponseData.SessionInfo.RoleName;
         }
 
+        internal void Renew(RenewSessionResponseData renewSessionResponseData)
+        {
+            this.SessionToken = renewSessionResponseData.SessionToken;
+
+            this.MasterToken = renewSessionResponseData.MasterToken;
+            this.SessionId = renewSessionResponseData.SessionId;
+            this.ValidityInSeconds = renewSessionResponseData.ValidityInSecondsST;
+            this.MasterValidityInSeconds = renewSessionResponseData.ValidityInSecondsMT;
+        }
+
         public override string ToString()
         {
             return $"User: {DisplayUserName}; Role: {RoleName}; Warehouse: {WarehouseName}";

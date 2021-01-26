@@ -88,7 +88,7 @@ namespace Snowflake.Client
         public async Task<bool> InitNewSessionAsync()
         {
             _session = await AuthenticateAsync(_clientSettings.AuthInfo, _clientSettings.SessionInfo).ConfigureAwait(false);
-            _requestBuilder.SetSessionToken(_session.SessionToken);
+            _requestBuilder.SetSessionTokens(_session.SessionToken, _session.MasterToken);
 
             return true;
         }
@@ -103,6 +103,27 @@ namespace Snowflake.Client
                 throw new SnowflakeException($"Athentication failed. Message: {response.Message}", response.Code);
 
             return new SnowflakeSession(response.Data);
+        }
+
+        /// <summary>
+        /// Renew session
+        /// </summary>
+        /// <returns>True if session succesfully renewed</returns>
+        public async Task<bool> RenewSessionAsync()
+        {
+            if (_session == null)
+                throw new SnowflakeException($"Session is not itialized yet.");
+
+            var renewSessionRequest = _requestBuilder.BuildRenewSessionRequest();
+            var response = await _restClient.SendAsync<RenewSessionResponse>(renewSessionRequest).ConfigureAwait(false);
+
+            if (!response.Success)
+                throw new SnowflakeException($"Renew session failed. Message: {response.Message}", response.Code);
+
+            _session.Renew(response.Data);
+            _requestBuilder.SetSessionTokens(_session.SessionToken, _session.MasterToken);
+
+            return true;
         }
 
         /// <summary>
@@ -165,17 +186,22 @@ namespace Snowflake.Client
             return new SnowflakeQueryRawResponse(response.Data);
         }
 
-        private async Task<bool> EnsureSessionIniatializedAsync()
-        {
-            return _session == null ? await InitNewSessionAsync().ConfigureAwait(false) : true;
-        }
-
         private async Task<QueryExecResponse> QueryInternalAsync(string sql, object sqlParams = null, bool describeOnly = false)
         {
-            await EnsureSessionIniatializedAsync().ConfigureAwait(false);
+            if (_session == null)
+            {
+                await InitNewSessionAsync().ConfigureAwait(false);
+            }
 
             var queryRequest = _requestBuilder.BuildQueryRequest(sql, sqlParams, describeOnly);
             var response = await _restClient.SendAsync<QueryExecResponse>(queryRequest).ConfigureAwait(false);
+
+            // Auto renew session, if it's expired
+            if (response.Code == 390112)
+            {
+                await RenewSessionAsync().ConfigureAwait(false);
+                response = await _restClient.SendAsync<QueryExecResponse>(queryRequest).ConfigureAwait(false);
+            }
 
             if (!response.Success)
                 throw new SnowflakeException($"Query execution failed. Message: {response.Message}", response.Code);
@@ -193,7 +219,7 @@ namespace Snowflake.Client
             var response = await _restClient.SendAsync<CloseResponse>(closeSessionRequest).ConfigureAwait(false);
 
             _session = null;
-            _requestBuilder.ClearSessionToken();
+            _requestBuilder.ClearSessionTokens();
 
             if (!response.Success)
                 throw new SnowflakeException($"Closing session failed. Message: {response.Message}", response.Code);

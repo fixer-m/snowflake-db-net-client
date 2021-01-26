@@ -5,7 +5,7 @@ namespace Snowflake.Client
     [Serializable]
     public class SnowflakeException : Exception
     {
-        public string ErrorCode { get; private set; }
+        public int? Code { get; private set; }
 
         public SnowflakeException()
         {
@@ -15,9 +15,9 @@ namespace Snowflake.Client
         {
         }
 
-        public SnowflakeException(string message, string code) : base(message)
+        public SnowflakeException(string message, int? code) : base(message)
         {
-            ErrorCode = code;
+            Code = code;
         }
 
         public SnowflakeException(string message, Exception innerException) : base(message, innerException)

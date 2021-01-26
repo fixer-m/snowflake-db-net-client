@@ -12,31 +12,35 @@ namespace Snowflake.Client
 {
     public class RequestBuilder
     {
-        private readonly UrlInfo urlInfo;
-        private readonly JsonSerializerOptions jsonSerializerOptions;
-        private readonly ClientAppInfo clientInfo;
-        private string sessionToken;
+        private readonly UrlInfo _urlInfo;
+        private readonly JsonSerializerOptions _jsonSerializerOptions;
+        private readonly ClientAppInfo _clientInfo;
+        
+        private string _masterToken;
+        private string _sessionToken;
 
         public RequestBuilder(UrlInfo urlInfo)
         {
-            this.urlInfo = urlInfo;
+            this._urlInfo = urlInfo;
 
-            this.jsonSerializerOptions = new JsonSerializerOptions()
+            this._jsonSerializerOptions = new JsonSerializerOptions()
             {
                 IgnoreNullValues = true
             };
 
-            this.clientInfo = new ClientAppInfo();
+            this._clientInfo = new ClientAppInfo();
         }
 
-        public void SetSessionToken(string sessionToken)
+        public void SetSessionTokens(string sessionToken, string masterToken)
         {
-            this.sessionToken = sessionToken;
+            this._sessionToken = sessionToken;
+            this._masterToken = masterToken;
         }
 
-        public void ClearSessionToken()
+        public void ClearSessionTokens()
         {
-            this.sessionToken = null;
+            this._sessionToken = null;
+            this._masterToken = null;
         }
 
         public HttpRequestMessage BuildLoginRequest(AuthInfo authInfo, SessionInfo sessionInfo)
@@ -48,14 +52,29 @@ namespace Snowflake.Client
                 LoginName = authInfo.User,
                 Password = authInfo.Password,
                 AccountName = authInfo.Account,
-                ClientAppId = clientInfo.DriverName,
-                ClientAppVersion = clientInfo.DriverVersion,
-                ClientEnvironment = clientInfo.Environment
+                ClientAppId = _clientInfo.DriverName,
+                ClientAppVersion = _clientInfo.DriverVersion,
+                ClientEnvironment = _clientInfo.Environment
             };
 
             var requestBody = new LoginRequest() { Data = data };
-            var jsonBody = JsonSerializer.Serialize(requestBody, jsonSerializerOptions);
+            var jsonBody = JsonSerializer.Serialize(requestBody, _jsonSerializerOptions);
             var request = BuildJsonRequestMessage(requestUri, HttpMethod.Post, jsonBody);
+
+            return request;
+        }
+
+        public HttpRequestMessage BuildRenewSessionRequest()
+        {
+            var requestUri = BuildRenewSessionUrl();
+            var requestBody = new RenewSessionRequest()
+            {
+                OldSessionToken = _sessionToken,
+                RequestType = "RENEW"
+            };
+
+            var jsonBody = JsonSerializer.Serialize(requestBody, _jsonSerializerOptions);
+            var request = BuildJsonRequestMessage(requestUri, HttpMethod.Post, jsonBody, true);
 
             return request;
         }
@@ -71,7 +90,7 @@ namespace Snowflake.Client
                 Bindings = ParameterBinder.BuildParameterBindings(sqlParams)
             };
 
-            var jsonBody = JsonSerializer.Serialize(requestBody, jsonSerializerOptions);
+            var jsonBody = JsonSerializer.Serialize(requestBody, _jsonSerializerOptions);
             var request = BuildJsonRequestMessage(queryUri, HttpMethod.Post, jsonBody);
 
             return request;
@@ -102,6 +121,16 @@ namespace Snowflake.Client
             return loginUrl;
         }
 
+        public Uri BuildRenewSessionUrl()
+        {
+            var queryParams = new Dictionary<string, string>();
+            queryParams[SnowflakeConst.SF_QUERY_REQUEST_ID] = Guid.NewGuid().ToString();
+            queryParams[SnowflakeConst.SF_QUERY_REQUEST_GUID] = Guid.NewGuid().ToString();
+
+            var url = BuildUri(SnowflakeConst.SF_TOKEN_REQUEST_PATH, queryParams);
+            return url;
+        }
+
         private Uri BuildQueryUrl()
         {
             var queryParams = new Dictionary<string, string>();
@@ -114,9 +143,9 @@ namespace Snowflake.Client
         public Uri BuildUri(string basePath, Dictionary<string, string> queryParams = null)
         {
             UriBuilder uriBuilder = new UriBuilder();
-            uriBuilder.Scheme = urlInfo.Protocol;
-            uriBuilder.Host = urlInfo.Host;
-            uriBuilder.Port = urlInfo.Port;
+            uriBuilder.Scheme = _urlInfo.Protocol;
+            uriBuilder.Host = _urlInfo.Host;
+            uriBuilder.Port = _urlInfo.Port;
             uriBuilder.Path = basePath;
 
             if (queryParams != null && queryParams.Count > 0)
@@ -133,7 +162,7 @@ namespace Snowflake.Client
             return uriBuilder.Uri;
         }
 
-        private HttpRequestMessage BuildJsonRequestMessage(Uri uri, HttpMethod method, string jsonBody = null)
+        private HttpRequestMessage BuildJsonRequestMessage(Uri uri, HttpMethod method, string jsonBody = null, bool useMasterToken = false)
         {
             var request = new HttpRequestMessage();
             request.Method = method;
@@ -144,15 +173,16 @@ namespace Snowflake.Client
                 request.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
             }
 
-            if (sessionToken != null)
+            if (_sessionToken != null)
             {
-                request.Headers.Add("Authorization", $"Snowflake Token=\"{sessionToken}\"");
+                var authToken = useMasterToken ? _masterToken : _sessionToken;
+                request.Headers.Add("Authorization", $"Snowflake Token=\"{authToken}\"");
             }
 
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/snowflake"));
-            request.Headers.UserAgent.Add(new ProductInfoHeaderValue(clientInfo.DriverName, clientInfo.DriverVersion));
-            request.Headers.UserAgent.Add(new ProductInfoHeaderValue(clientInfo.Environment.OSVersion));
-            request.Headers.UserAgent.Add(new ProductInfoHeaderValue(clientInfo.Environment.NETRuntime, clientInfo.Environment.NETVersion));
+            request.Headers.UserAgent.Add(new ProductInfoHeaderValue(_clientInfo.DriverName, _clientInfo.DriverVersion));
+            request.Headers.UserAgent.Add(new ProductInfoHeaderValue(_clientInfo.Environment.OSVersion));
+            request.Headers.UserAgent.Add(new ProductInfoHeaderValue(_clientInfo.Environment.NETRuntime, _clientInfo.Environment.NETVersion));
 
             return request;
         }

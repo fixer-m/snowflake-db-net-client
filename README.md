@@ -1,4 +1,4 @@
-[![NuGet](https://img.shields.io/badge/nuget-v0.2.4-green.svg)](https://www.nuget.org/packages/Snowflake.Client/) 
+[![NuGet](https://img.shields.io/badge/nuget-v0.3.0-green.svg)](https://www.nuget.org/packages/Snowflake.Client/) 
 [![](https://img.shields.io/nuget/dt/Snowflake.Client.svg)](https://www.nuget.org/packages/Snowflake.Client/) 
 [![Targets](https://img.shields.io/badge/.NET%20Standard-2.0-green.svg)](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) 
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -15,27 +15,26 @@ Read my [blog post](https://medium.com/@fixer_m/better-net-client-for-snowflake-
 
 ### Basic Usage
 ```csharp
-// Creates new client and initializes new session 
+// Creates new client
 var snowflakeClient = new SnowflakeClient("user", "password", "account", "region");
-var sessionInitalized = await snowflakeClient.InitSessionAsync();
 
-// Executes query and maps response data to your class
+// Executes query and maps response data to "Employee" class
 var employees = await snowflakeClient.QueryAsync<Employee>("SELECT * FROM MASTER.PUBLIC.EMPLOYEES;");
 
-// Executes query and returns raw data from response (rows and columns)
-var employeesRawData = await snowflakeClient.QueryRawAsync("SELECT * FROM MASTER.PUBLIC.EMPLOYEES;");
+// Executes query and returns raw response from Snowflake (rows, columns and query information)
+var queryRawResponse = await snowflakeClient.QueryRawResponseAsync("SELECT * FROM MASTER.PUBLIC.EMPLOYEES;");
 
 // Executes query and returns value of first cell as string result
 string useRoleResult = await snowflakeClient.ExecuteScalarAsync("USE ROLE ACCOUNTADMIN;");
 
 // Executes query and returns affected rows count
-int insertResult = await snowflakeClient.ExecuteAsync("INSERT INTO EMPLOYEES Title VALUES (?);", "Dev");
+int affectedRows = await snowflakeClient.ExecuteAsync("INSERT INTO EMPLOYEES Title VALUES (?);", "Dev");
 
 // Parameters binding options:
-var employeesParam_1 = await snowflakeClient.QueryAsync<Employee>("SELECT * FROM EMPLOYEES WHERE TITLE = ?", "Programmer");
-var employeesParam_2 = await snowflakeClient.QueryAsync<Employee>("SELECT * FROM EMPLOYEES WHERE ID IN (?,?)", new int[] { 1, 2 });
-var employeesParam_3 = await snowflakeClient.QueryAsync<Employee>("SELECT * FROM EMPLOYEES WHERE TITLE = :Title", new Employee() { Title = "Programmer" });
-var employeesParam_4 = await snowflakeClient.QueryAsync<Employee>("SELECT * FROM EMPLOYEES WHERE TITLE = :Title", new { Title = "Programmer" });
+var employees1 = await snowflakeClient.QueryAsync<Employee>("SELECT * FROM EMPLOYEES WHERE TITLE = ?", "Programmer");
+var employees2 = await snowflakeClient.QueryAsync<Employee>("SELECT * FROM EMPLOYEES WHERE ID IN (?,?)", new int[] { 1, 2 });
+var employees3 = await snowflakeClient.QueryAsync<Employee>("SELECT * FROM EMPLOYEES WHERE TITLE = :Title", new Employee() { Title = "Programmer" });
+var employees4 = await snowflakeClient.QueryAsync<Employee>("SELECT * FROM EMPLOYEES WHERE TITLE = :Title", new { Title = "Programmer" });
 ```
 
 ### Comparison with Snowflake.Data 
@@ -58,6 +57,33 @@ Missing features in Snowflake.Client vs Snowflake.Data:
 - Chunks downloader (to download big amount of data)
 - Auto-renew session 
 - OKTA Authentication
+
+### Mapping basics
+Use `QueryAsync<T>` method to get response data automatically mapped to your model (`T`): 
+```csharp
+// Executes query and maps response data to "Employee" class
+var employees = await snowflakeClient.QueryAsync<Employee>("SELECT * FROM MASTER.PUBLIC.EMPLOYEES;");
+
+// Your model
+public class Employee
+{
+    public string Title { get; set; }
+    public int? Employee_Id { get; set; }
+    public int? Manager_Id { get; set; }
+}
+```
+
+Internally it uses [`System.Text.Json`](https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-apis/) to deserialize Snowflake data to your model. It uses [default deserialize behavior](https://docs.microsoft.com/ru-ru/dotnet/api/system.text.json.jsonserializer.deserialize?view=net-5.0), except `PropertyNameCaseInsensitive` is set to **true**.  
+You can override this behavior by providing custom `JsonSerializerOptions`. You can pass it in `SnowflakeClient` constructor or you can set it directly via `SnowflakeDataMapper.SetJsonMapperOptions(jsonSerializerOptions)`.
+
+If you want you can use `SnowflakeDataMapper.MapTo<T>` to map Snowflake data response manually: 
+```csharp
+// Executes query and returns raw response from Snowflake (rows, columns and query information)
+var queryDataResponse = await snowflakeClient.QueryRawResponseAsync("SELECT * FROM MASTER.PUBLIC.EMPLOYEES;");
+
+// Maps Snowflake rows and columns to your model (via System.Text.Json)
+var employees = SnowflakeDataMapper.MapTo<Employee>(queryDataResponse.Columns, queryDataResponse.Rows);
+```
 
 ### Installation
 Add nuget package [Snowflake.Client](https://www.nuget.org/packages/Snowflake.Client) to your project:  

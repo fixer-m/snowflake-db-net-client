@@ -9,7 +9,7 @@ Execute SQL queries in Snowflake and get mapped response back.
 Read my [blog post](https://medium.com/@fixer_m/better-net-client-for-snowflake-db-ecb48c48c872) about it. 
 
 ### Main Features
-- Basic authentication
+- User/Password authentication
 - Execute SQL queries with parameters
 - Map response data to your models
 
@@ -48,14 +48,13 @@ Improvements in Snowflake.Client vs Snowflake.Data:
 
 Added features in Snowflake.Client vs Snowflake.Data:
 - Map response data to entities
-- Supports describeOnly flag
+- Supports `describeOnly` flag
 - Has option to return raw data from Snowflake response
 - Exposes Snowflake session info
 - New SQL parameter binding API with a few options (inspired by Dapper)
 
 Missing features in Snowflake.Client vs Snowflake.Data:
-- Chunks downloader (to download big amount of data)
-- Auto-renew session 
+- Chunks downloader (to download big amount of data) 
 - OKTA Authentication
 
 ### Mapping basics
@@ -93,10 +92,10 @@ PM> Install-Package Snowflake.Client
 
 ### Road Map 
 - [Done] Async API 
+- [Done] Auto-renew session
 - [In Progress] Unit tests
 - Integration tests
 - Chunks downloader (for big amount of data)
-- Auto-renew session 
 - OKTA Authentication
 - Query cancellation
 - Mapper documentation

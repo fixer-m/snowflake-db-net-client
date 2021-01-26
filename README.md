@@ -58,6 +58,32 @@ Missing features in Snowflake.Client vs Snowflake.Data:
 - Auto-renew session 
 - OKTA Authentication
 
+### Mapping basics
+Use `QueryAsync<T>` method to get response data automatically mapped to your model (T): 
+```csharp
+// Executes query and maps response data to "Employee" class
+var employees = await snowflakeClient.QueryAsync<Employee>("SELECT * FROM MASTER.PUBLIC.EMPLOYEES;");
+
+// Your model
+public class Employee
+{
+    public string Title { get; set; }
+    public int? Employee_Id { get; set; }
+    public int? Manager_Id { get; set; }
+}
+```
+
+Internally it uses [`System.Text.Json`](https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-apis/) to deserialize Snowflake data to your model. It uses [default deserialize behavior](https://docs.microsoft.com/ru-ru/dotnet/api/system.text.json.jsonserializer.deserialize?view=net-5.0), except `PropertyNameCaseInsensitive` is set to **true**. You can override this behavior by providing custom `JsonSerializerOptions`. You can pass it in `SnowflakeClient` constructor or you can set it directly via `SnowflakeDataMapper.SetJsonMapperOptions(jsonSerializerOptions)`.
+
+If you want you can use `SnowflakeDataMapper.MapTo<T>` to map Snowflake data response manually: 
+```csharp
+// Executes query and returns raw response from Snowflake (rows, columns and query information)
+var queryDataResponse = await snowflakeClient.QueryRawResponseAsync("SELECT * FROM MASTER.PUBLIC.EMPLOYEES;");
+
+// Maps Snowflake rows and columns to your model (via System.Text.Json)
+var employees = SnowflakeDataMapper.MapTo<Employee>(queryDataResponse.Columns, queryDataResponse.Rows);
+```
+
 ### Installation
 Add nuget package [Snowflake.Client](https://www.nuget.org/packages/Snowflake.Client) to your project:  
 ```{r, engine='bash', code_block_name}

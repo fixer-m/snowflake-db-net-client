@@ -52,10 +52,12 @@ namespace Snowflake.Client
             if (value == null || value == "null")
                 return "null";
 
-            // todo: Escape '\' and '"' to have valid json
-            var sfTextTypes = new List<string>() { "text", "object", "variant", "array" };
-            if (sfTextTypes.Contains(columnType))
-                return '"' + value + '"';
+            if (columnType == "text")
+                return JsonSerializer.Serialize(value);
+
+            var sfSemiStructuredTypes = new List<string>() { "object", "variant", "array" };
+            if (sfSemiStructuredTypes.Contains(columnType))
+                return value;
 
             var sfSimpleTypes = new List<string>() { "fixed", "real" };
             if (sfSimpleTypes.Contains(columnType))

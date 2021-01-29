@@ -2,7 +2,7 @@
 
 namespace Snowflake.Client.Json
 {
-    public class QueryCancelRequest : BaseRequest
+    public class CancelQueryRequest : BaseRequest
     {
         [JsonPropertyName("requestId")]
         public string RequestId { get; set; }

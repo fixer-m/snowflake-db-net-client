@@ -15,7 +15,7 @@ namespace Snowflake.Client
         private readonly UrlInfo _urlInfo;
         private readonly JsonSerializerOptions _jsonSerializerOptions;
         private readonly ClientAppInfo _clientInfo;
-        
+
         private string _masterToken;
         private string _sessionToken;
 
@@ -58,6 +58,20 @@ namespace Snowflake.Client
             };
 
             var requestBody = new LoginRequest() { Data = data };
+            var jsonBody = JsonSerializer.Serialize(requestBody, _jsonSerializerOptions);
+            var request = BuildJsonRequestMessage(requestUri, HttpMethod.Post, jsonBody);
+
+            return request;
+        }
+
+        public HttpRequestMessage BuildCancelQueryRequest(string requestId)
+        {
+            var requestUri = BuildCancelQueryUrl();
+            var requestBody = new CancelQueryRequest()
+            {
+                RequestId = requestId
+            };
+
             var jsonBody = JsonSerializer.Serialize(requestBody, _jsonSerializerOptions);
             var request = BuildJsonRequestMessage(requestUri, HttpMethod.Post, jsonBody);
 
@@ -119,6 +133,16 @@ namespace Snowflake.Client
 
             var loginUrl = BuildUri(SnowflakeConst.SF_LOGIN_PATH, queryParams);
             return loginUrl;
+        }
+
+        public Uri BuildCancelQueryUrl()
+        {
+            var queryParams = new Dictionary<string, string>();
+            queryParams[SnowflakeConst.SF_QUERY_REQUEST_ID] = Guid.NewGuid().ToString();
+            queryParams[SnowflakeConst.SF_QUERY_REQUEST_GUID] = Guid.NewGuid().ToString();
+
+            var url = BuildUri(SnowflakeConst.SF_QUERY_CANCEL_PATH, queryParams);
+            return url;
         }
 
         public Uri BuildRenewSessionUrl()

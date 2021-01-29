@@ -1,6 +1,6 @@
-﻿using Snowflake.Client.Json;
+﻿using Snowflake.Client.Helpers;
+using Snowflake.Client.Json;
 using Snowflake.Client.Model;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -40,7 +40,7 @@ namespace Snowflake.Client
         /// <param name="urlInfo">URL information: host, protocol and port</param>
         /// <param name="jsonMapperOptions">JsonSerializerOptions which will be used to map response to your model</param>
         public SnowflakeClient(AuthInfo authInfo, SessionInfo sessionInfo = null, UrlInfo urlInfo = null, JsonSerializerOptions jsonMapperOptions = null)
-        : this(new SnowflakeClientSettings(authInfo))
+        : this(new SnowflakeClientSettings(authInfo, sessionInfo, urlInfo, jsonMapperOptions))
         {
         }
 
@@ -184,6 +184,22 @@ namespace Snowflake.Client
             var response = await QueryInternalAsync(sql, sqlParams, describeOnly).ConfigureAwait(false);
 
             return new SnowflakeQueryRawResponse(response.Data);
+        }
+
+        /// <summary>
+        /// Cancels running query
+        /// </summary>
+        /// <param name="requestId">Request ID to cancel.</param>
+        public async Task<bool> CancelQueryAsync(string requestId)
+        {
+            var cancelQueryRequest = _requestBuilder.BuildCancelQueryRequest(requestId);
+
+            var response = await _restClient.SendAsync<NullDataResponse>(cancelQueryRequest).ConfigureAwait(false);
+
+            if (!response.Success)
+                throw new SnowflakeException($"Cancelling query failed. Message: {response.Message}", response.Code);
+
+            return true;
         }
 
         private async Task<QueryExecResponse> QueryInternalAsync(string sql, object sqlParams = null, bool describeOnly = false)

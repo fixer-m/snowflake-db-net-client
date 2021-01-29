@@ -3,7 +3,7 @@ using System.Linq;
 using Snowflake.Client.Json;
 using Snowflake.Client.Model;
 
-namespace Snowflake.Client
+namespace Snowflake.Client.Helpers
 {
     // Based on https://github.com/snowflakedb/snowflake-connector-net/blob/master/Snowflake.Data/Core/ResultSetUtil.cs
     public static class SnowflakeUtils

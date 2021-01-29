@@ -12,6 +12,8 @@ namespace Snowflake.Client
 
         public const string SF_QUERY_PATH = "/queries/v1/query-request";
 
+        public const string SF_QUERY_CANCEL_PATH = "/queries/v1/abort-request";
+
         public const string SF_QUERY_WAREHOUSE = "warehouse";
 
         public const string SF_QUERY_DB = "databaseName";

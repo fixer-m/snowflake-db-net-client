@@ -54,7 +54,7 @@ Added features in Snowflake.Client vs Snowflake.Data:
 - New SQL parameter binding API with a few options (inspired by Dapper)
 
 Missing features in Snowflake.Client vs Snowflake.Data:
-- Chunks downloader (to download big amount of data) 
+- Chunks downloader (to download big data responses) 
 - OKTA Authentication
 
 ### Mapping basics
@@ -72,7 +72,7 @@ public class Employee
 }
 ```
 
-Internally it uses [`System.Text.Json`](https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-apis/) to deserialize Snowflake data to your model. It uses [default deserialize behavior](https://docs.microsoft.com/ru-ru/dotnet/api/system.text.json.jsonserializer.deserialize?view=net-5.0), except `PropertyNameCaseInsensitive` is set to **true**.  
+Internally it uses [System.Text.Json](https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-apis/) to deserialize Snowflake data to your model. It uses [default deserialize behavior](https://docs.microsoft.com/ru-ru/dotnet/api/system.text.json.jsonserializer.deserialize?view=net-5.0), except `PropertyNameCaseInsensitive` is set to **true**.  
 You can override this behavior by providing custom `JsonSerializerOptions`. You can pass it in `SnowflakeClient` constructor or you can set it directly via `SnowflakeDataMapper.SetJsonMapperOptions(jsonSerializerOptions)`.
 
 If you want you can use `SnowflakeDataMapper.MapTo<T>` to map Snowflake data response manually: 
@@ -93,9 +93,10 @@ PM> Install-Package Snowflake.Client
 ### Road Map 
 - [Done] Async API 
 - [Done] Auto-renew session
+- [Done] Query cancellation
 - [In Progress] Unit tests
-- Integration tests
+- [In Progress] Integration tests
+- Better mapper documentation
 - Chunks downloader (for big amount of data)
-- OKTA Authentication
-- Query cancellation
-- Mapper documentation
+- ? Get/Put files to Stage
+- ? OKTA Authentication

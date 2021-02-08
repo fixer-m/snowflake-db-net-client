@@ -1,0 +1,12 @@
+{
+  "connection": {
+    "user": "username",
+    "password": "password",
+    "account": "account",
+    "region": "eu-central-1",
+    "warehouse": "COMPUTE_WH",
+    "database": "TPCH_SF1",
+    "schema": "SNOWFLAKE_SAMPLE_DATA",
+    "role": "SYSADMIN"
+  }
+}

@@ -16,4 +16,10 @@
     <ProjectReference Include="..\Snowflake.Client\Snowflake.Client.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="testconfig.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

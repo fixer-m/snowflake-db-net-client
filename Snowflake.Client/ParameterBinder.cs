@@ -28,7 +28,7 @@ namespace Snowflake.Client
 
             if (IsCollectionOfSimpleType(paramType))
             {
-                var elementType = paramType.GetGenericArguments().FirstOrDefault() ?? paramType.GetElementType();
+                var elementType = paramType.GetGenericArguments().FirstOrDefault() ?? paramType.GetElementType() ?? GetGenericTypeFromIEnumerable(paramType);
 
                 var enumInterface = (IEnumerable)param;
                 int i = 0;
@@ -51,9 +51,15 @@ namespace Snowflake.Client
             if (type.GetInterface(nameof(IEnumerable)) == null)
                 return false;
 
-            var elementType = type.GetGenericArguments().FirstOrDefault() ?? type.GetElementType();
+            var elementType = type.GetGenericArguments().FirstOrDefault() ?? type.GetElementType() ?? GetGenericTypeFromIEnumerable(type);
 
             return IsSimpleType(elementType);
+        }
+
+        private static Type GetGenericTypeFromIEnumerable(Type type)
+        {
+            return type.GetInterfaces().FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+                         .GenericTypeArguments.FirstOrDefault();
         }
 
         private static bool IsSimpleType(Type paramType)

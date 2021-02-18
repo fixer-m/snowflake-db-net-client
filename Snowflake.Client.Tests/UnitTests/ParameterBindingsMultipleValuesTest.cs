@@ -1,7 +1,6 @@
 ﻿using NUnit.Framework;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 
 namespace Snowflake.Client.Tests.UnitTests
@@ -77,5 +76,33 @@ namespace Snowflake.Client.Tests.UnitTests
             }
         }
 
+        [Test]
+        public void BuildParameters_ListOfComplexTypes()
+        {
+            var values = GetCustomClassCollection().ToList();
+
+            Assert.Throws<ArgumentException>(() => ParameterBinder.BuildParameterBindings(values));
+        }
+
+        [Test]
+        public void BuildParameters_IEnumerableOfComplexTypes()
+        {
+            var values = GetCustomClassCollection();
+
+            Assert.Throws<ArgumentException>(() => ParameterBinder.BuildParameterBindings(values));
+        }
+
+        private static IEnumerable<CustomClass> GetCustomClassCollection()
+        {
+            yield return new CustomClass() { Property = "one" } ;
+            yield return new CustomClass() { Property = "two" };
+        }
+
+        private class CustomClass
+        {
+            public string Property { get; set; }
+        }
     }
+
+
 }

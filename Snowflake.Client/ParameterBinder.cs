@@ -26,19 +26,23 @@ namespace Snowflake.Client
                 return bindings;
             }
 
-            if (IsCollectionOfSimpleType(paramType))
+            if (param is IEnumerable enumerable)
             {
-                var elementType = paramType.GetGenericArguments().FirstOrDefault() ?? paramType.GetElementType() ?? GetGenericTypeFromIEnumerable(paramType);
+                var elementType = GetItemTypeFromCollection(paramType);
 
-                var enumInterface = (IEnumerable)param;
-                int i = 0;
-                foreach (var item in enumInterface)
+                if (IsSimpleType(elementType))
                 {
-                    i++;
-                    bindings.Add(i.ToString(), BuildParamFromSimpleType(item, elementType));
+                    int i = 0;
+                    foreach (var item in enumerable)
+                    {
+                        i++;
+                        bindings.Add(i.ToString(), BuildParamFromSimpleType(item, elementType));
+                    }
+
+                    return bindings;
                 }
 
-                return bindings;
+                throw new ArgumentException($"Parameter binding doesn't support type {elementType.Name} in collections.");
             }
 
             bindings = BuildParamsFromComplexType(param, paramType);
@@ -46,20 +50,14 @@ namespace Snowflake.Client
             return bindings;
         }
 
-        private static bool IsCollectionOfSimpleType(Type type)
+        private static Type GetItemTypeFromCollection(Type type)
         {
-            if (type.GetInterface(nameof(IEnumerable)) == null)
-                return false;
+            var elementType = type.GetGenericArguments().FirstOrDefault()
+                                ?? type.GetElementType()
+                                ?? type.GetInterfaces().FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+                                       .GenericTypeArguments.FirstOrDefault();
 
-            var elementType = type.GetGenericArguments().FirstOrDefault() ?? type.GetElementType() ?? GetGenericTypeFromIEnumerable(type);
-
-            return IsSimpleType(elementType);
-        }
-
-        private static Type GetGenericTypeFromIEnumerable(Type type)
-        {
-            return type.GetInterfaces().FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IEnumerable<>))
-                         .GenericTypeArguments.FirstOrDefault();
+            return elementType;
         }
 
         private static bool IsSimpleType(Type paramType)
@@ -68,20 +66,32 @@ namespace Snowflake.Client
             if (underlyingType != null)
                 paramType = underlyingType;
 
-            // Will treat struct as "simple" class.
-            return paramType == typeof(string) || !paramType.IsClass || paramType == typeof(byte[]);
+            return paramType == typeof(string) || !paramType.IsClass && !IsCustomValueType(paramType) || paramType == typeof(byte[]);
+        }
+
+        private static bool IsCustomValueType(Type type)
+        {
+            return type.IsValueType && !type.IsPrimitive && type.Namespace != null && !type.Namespace.StartsWith("System");
         }
 
         private static Dictionary<string, ParamBinding> BuildParamsFromComplexType(object param, Type paramType)
         {
             var result = new Dictionary<string, ParamBinding>();
-            var typeProperties = paramType.GetProperties().Where(p => IsSimpleType(p.PropertyType)).ToList();
 
+            var typeProperties = paramType.GetProperties().Where(p => IsSimpleType(p.PropertyType)).ToList();
             foreach (var property in typeProperties)
             {
                 var propValue = property.GetValue(param);
                 var binding = BuildParamFromSimpleType(propValue, property.PropertyType);
                 result.Add(property.Name, binding);
+            }
+
+            var typeFields = paramType.GetFields().Where(p => IsSimpleType(p.FieldType)).ToList();
+            foreach (var field in typeFields)
+            {
+                var propValue = field.GetValue(param);
+                var binding = BuildParamFromSimpleType(propValue, field.FieldType);
+                result.Add(field.Name, binding);
             }
 
             return result;

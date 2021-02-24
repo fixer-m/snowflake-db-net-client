@@ -74,6 +74,7 @@ namespace Snowflake.Client
             {
                 hexBuilder.AppendFormat("{0:x2}", b);
             }
+
             return hexBuilder.ToString();
         }
 
@@ -93,7 +94,7 @@ namespace Snowflake.Client
             int dotIndex = srcVal.IndexOf('.');
 
             if (dotIndex == -1)
-                return Tuple.Create(long.Parse(srcVal), (long)0);
+                return Tuple.Create(long.Parse(srcVal), 0L);
 
             var intPart = long.Parse(srcVal.Substring(0, dotIndex));
             var decimalPartLength = srcVal.Length - dotIndex - 1;

@@ -1,4 +1,5 @@
 ﻿using System.Net.Http;
+using System.Security.Authentication;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -6,7 +7,7 @@ namespace Snowflake.Client
 {
     public class RestClient
     {
-        private readonly HttpClient httpClient;
+        private HttpClient httpClient;
         private readonly JsonSerializerOptions jsonSerializerOptions;
 
         public RestClient()
@@ -38,6 +39,11 @@ namespace Snowflake.Client
             var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
             return JsonSerializer.Deserialize<T>(json, jsonSerializerOptions);
+        }
+
+        public void SetHttpClient(HttpClient httpClient)
+        {
+            this.httpClient = httpClient;
         }
     }
 }

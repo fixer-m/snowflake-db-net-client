@@ -1,8 +1,10 @@
 ﻿using Snowflake.Client.Helpers;
 using Snowflake.Client.Json;
 using Snowflake.Client.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -241,6 +243,17 @@ namespace Snowflake.Client
                 throw new SnowflakeException($"Closing session failed. Message: {response.Message}", response.Code);
 
             return response.Success;
+        }
+
+        /// <summary>
+        /// Overrides internal HttpClient
+        /// </summary>
+        public void SetHttpClient(HttpClient httpClient)
+        {
+            if (httpClient == null)
+                throw new ArgumentException("Http client cannot be null");
+
+            _restClient.SetHttpClient(httpClient);
         }
     }
 }

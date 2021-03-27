@@ -251,7 +251,7 @@ namespace Snowflake.Client
         public void SetHttpClient(HttpClient httpClient)
         {
             if (httpClient == null)
-                throw new ArgumentException("Http client cannot be null");
+                throw new ArgumentException("HttpClient cannot be null.");
 
             _restClient.SetHttpClient(httpClient);
         }

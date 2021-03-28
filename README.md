@@ -1,4 +1,4 @@
-[![NuGet](https://img.shields.io/badge/nuget-v0.3.2-green.svg)](https://www.nuget.org/packages/Snowflake.Client/) 
+[![NuGet](https://img.shields.io/badge/nuget-v0.3.4-green.svg)](https://www.nuget.org/packages/Snowflake.Client/) 
 [![](https://img.shields.io/nuget/dt/Snowflake.Client.svg)](https://www.nuget.org/packages/Snowflake.Client/) 
 [![Targets](https://img.shields.io/badge/.NET%20Standard-2.0-green.svg)](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) 
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -54,14 +54,14 @@ Added features in Snowflake.Client vs Snowflake.Data:
 - New SQL parameter binding API with a few options (inspired by Dapper)
 
 Missing features in Snowflake.Client vs Snowflake.Data:
-- Chunks downloader (to download big data responses) 
+- Chunks downloader (to download massive response data) 
 - OKTA Authentication
 
 ### Mapping basics
 Use `QueryAsync<T>` method to get response data automatically mapped to your model (`T`): 
 ```csharp
 // Executes query and maps response data to "Employee" class
-var employees = await snowflakeClient.QueryAsync<Employee>("SELECT * FROM MASTER.PUBLIC.EMPLOYEES;");
+IEnumerable<Empolyee> employees = await snowflakeClient.QueryAsync<Employee>("SELECT * FROM MASTER.PUBLIC.EMPLOYEES;");
 
 // Your model
 public class Employee
@@ -99,4 +99,3 @@ PM> Install-Package Snowflake.Client
 - Better mapper documentation
 - Chunks downloader (for big amount of data)
 - ? Get/Put files to Stage
-- ? OKTA Authentication

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Security.Authentication;
 using System.Text.Json;
@@ -8,13 +9,8 @@ namespace Snowflake.Client
 {
     public class RestClient
     {
-        private HttpClient httpClient;
-        private readonly JsonSerializerOptions jsonSerializerOptions;
-
-        public void SetHttpClient(HttpClient httpClient)
-        {
-            this.httpClient = httpClient;
-        }
+        private HttpClient _httpClient;
+        private readonly JsonSerializerOptions _jsonSerializerOptions;
 
         public RestClient()
         {
@@ -22,35 +18,41 @@ namespace Snowflake.Client
             {
                 SslProtocols = SslProtocols.Tls12,
                 CheckCertificateRevocationList = true,
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
             };
 
-            httpClient = new HttpClient(httpClientHandler);
+            _httpClient = new HttpClient(httpClientHandler);
 
-            jsonSerializerOptions = new JsonSerializerOptions()
+            _jsonSerializerOptions = new JsonSerializerOptions()
             {
                 PropertyNameCaseInsensitive = true
             };
         }
 
+        public void SetHttpClient(HttpClient httpClient)
+        {
+            _httpClient = httpClient;
+        }
+
         public async Task<T> SendAsync<T>(HttpRequestMessage request)
         {
-            var response = await httpClient.SendAsync(request).ConfigureAwait(false);
+            var response = await _httpClient.SendAsync(request).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            return JsonSerializer.Deserialize<T>(json, jsonSerializerOptions);
+            return JsonSerializer.Deserialize<T>(json, _jsonSerializerOptions);
         }
 
         [Obsolete]
         public T Send<T>(HttpRequestMessage request)
         {
-            var response = httpClient.SendAsync(request).Result;
+            var response = _httpClient.SendAsync(request).Result;
             response.EnsureSuccessStatusCode();
 
             var json = response.Content.ReadAsStringAsync().Result;
 
-            return JsonSerializer.Deserialize<T>(json, jsonSerializerOptions);
+            return JsonSerializer.Deserialize<T>(json, _jsonSerializerOptions);
         }
     }
 }

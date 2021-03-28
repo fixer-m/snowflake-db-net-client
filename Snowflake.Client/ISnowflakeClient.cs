@@ -1,5 +1,6 @@
 ﻿using Snowflake.Client.Model;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Snowflake.Client
@@ -14,5 +15,6 @@ namespace Snowflake.Client
         Task<IEnumerable<T>> QueryAsync<T>(string sql, object sqlParams = null);
         Task<SnowflakeQueryRawResponse> QueryRawResponseAsync(string sql, object sqlParams = null, bool describeOnly = false);
         Task<bool> RenewSessionAsync();
+        void SetHttpClient(HttpClient httpClient);
     }
 }

@@ -5,9 +5,8 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Version>0.3.4</Version>
     <Authors>fixer_m</Authors>
-    <Description>
-      Unofficial .NET client for Snowflake REST API.
-      Provides straightforward and efficient way to execute SQL queries in Snowflake and automatically map response to your models.
+    <Description>Unofficial .NET client for Snowflake REST API. 
+Provides straightforward and efficient way to execute SQL queries in Snowflake and automatically map response to your models.
     </Description>
     <Copyright>Copyright (c) 2020-2021 Ilya Bystrov</Copyright>
     <PackageProjectUrl>https://github.com/fixer-m/snowflake-db-net-client/</PackageProjectUrl>

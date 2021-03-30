@@ -79,6 +79,9 @@ namespace Snowflake.Client
 
             if (string.IsNullOrEmpty(settings.UrlInfo.Host))
                 throw new SnowflakeException($"URL Host cannot be empty.");
+
+            if (!settings.UrlInfo.Host.ToLower().EndsWith(".snowflakecomputing.com"))
+                throw new SnowflakeException($"URL Host should have *.snowflakecomputing.com at the end.");
         }
 
         /// <summary>

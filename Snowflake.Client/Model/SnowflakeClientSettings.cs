@@ -34,7 +34,8 @@ namespace Snowflake.Client.Model
             UrlInfo = urlInfo ?? new UrlInfo();
             JsonMapperOptions = jsonMapperOptions ?? new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
 
-            UrlInfo.Host = authInfo.GetHostName();
+            if (string.IsNullOrEmpty(UrlInfo.Host))
+                UrlInfo.Host = authInfo.GetHostName();
         }
     }
 }

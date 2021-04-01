@@ -66,7 +66,7 @@ namespace Snowflake.Client.Model
             if (!string.IsNullOrEmpty(Cloud))
                 hostname += $"{Cloud}.";
 
-            hostname += $"snowflakecomputing.com";
+            hostname += "snowflakecomputing.com";
 
             return hostname.ToLower();
         }
@@ -79,7 +79,7 @@ namespace Snowflake.Client.Model
             if (string.IsNullOrEmpty(Region) && !string.IsNullOrEmpty(Cloud))
                 throw new Exception("Region is empty, but Cloud is specified.");
 
-            var allowedClouds = new string[] { "aws", "azure", "gcp" };
+            var allowedClouds = new string[] {"aws", "azure", "gcp"};
 
             if (!string.IsNullOrEmpty(Cloud) && !allowedClouds.Contains(Cloud))
                 throw new Exception($"Cloud tag '{Cloud}' is not allowed. Available values: 'aws', 'azure', 'gcp'.");

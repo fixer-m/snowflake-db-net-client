@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using Snowflake.Client.Model;
 using Snowflake.Client.Tests.IntegrationTests.Models;
 using System.IO;
 using System.Text.Json;

@@ -28,9 +28,10 @@ namespace Snowflake.Client
         /// <param name="user">Username</param>
         /// <param name="password">Password</param>
         /// <param name="account">Account</param>
-        /// <param name="region">Region ("us-east-1" by default)</param>
-        public SnowflakeClient(string user, string password, string account, string region = null)
-         : this(new AuthInfo(user, password, account, region))
+        /// <param name="region">Region.  (optional, )</param>
+        /// <param name="region">CloudTag (optional)</param>
+        public SnowflakeClient(string user, string password, string account, string region = null, string cloudTag = null)
+         : this(new AuthInfo(user, password, account, region, cloudTag))
         {
         }
 

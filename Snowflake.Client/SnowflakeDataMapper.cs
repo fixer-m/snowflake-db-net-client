@@ -18,7 +18,7 @@ namespace Snowflake.Client
         public static IEnumerable<T> MapTo<T>(List<ColumnDescription> columns, List<List<string>> rows)
         {
             if (columns == null || columns.Count == 0)
-                throw new Exception("Columns argument should be not empty.");
+                throw new ArgumentNullException("Columns argument should be not empty.");
 
             if (rows == null)
                 throw new ArgumentNullException(nameof(rows));

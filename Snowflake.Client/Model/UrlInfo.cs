@@ -1,4 +1,6 @@
-﻿namespace Snowflake.Client.Model
+﻿using System;
+
+namespace Snowflake.Client.Model
 {
     /// <summary>
     /// Represents information about Snowflake URL.
@@ -7,7 +9,7 @@
     {
         /// <summary>
         /// Snowflake URL host. Should end up with ".snowflakecomputing.com".
-        /// If not specified, will be constructed as {Account}.{Region}.{Cloud}.snowflakecomputing.com.
+        /// If not specified, will be constructed as Account.Region.Cloud.snowflakecomputing.com.
         /// </summary>
         public string Host { get; set; }
 
@@ -25,6 +27,22 @@
         {
             Protocol = "https";
             Port = 443;
+        }
+
+        public UrlInfo(string host, string protocol = "https", int port = 443)
+        {
+            Host = host;
+            Protocol = protocol;
+            Port = port;
+        }
+
+        public UrlInfo(Uri snowflakeUrl) : this(snowflakeUrl.Host, snowflakeUrl.Scheme, snowflakeUrl.Port)
+        {
+        }
+
+        public override string ToString()
+        {
+            return $"{Protocol}://{Host}:{Port}";
         }
     }
 }

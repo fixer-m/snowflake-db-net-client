@@ -29,16 +29,15 @@ namespace Snowflake.Client
         /// <param name="password">Password</param>
         /// <param name="account">Account</param>
         /// <param name="region">Region: "us-east-1", etc. Required for all except for US West Oregon (us-west-2).</param>
-        /// <param name="cloud">Cloud tag: "aws", "azure", "gcp". Specify *only* if your Snowflake URL has it.</param>
-        public SnowflakeClient(string user, string password, string account, string region = null, string cloud = null)
-            : this(new AuthInfo(user, password, account, region, cloud))
+        public SnowflakeClient(string user, string password, string account, string region = null)
+            : this(new AuthInfo(user, password, account, region))
         {
         }
 
-        /// <summary>
+        /// <summary> 
         /// Creates new Snowflake client. 
         /// </summary>
-        /// <param name="authInfo">Auth information: user, password, account, region, cloud</param>
+        /// <param name="authInfo">Auth information: user, password, account, region</param>
         /// <param name="sessionInfo">Session information: role, schema, database, warehouse</param>
         /// <param name="urlInfo">URL information: host, protocol and port</param>
         /// <param name="jsonMapperOptions">JsonSerializerOptions which will be used to map response to your model</param>
@@ -64,25 +63,25 @@ namespace Snowflake.Client
         private void ValidateClientSettings(SnowflakeClientSettings settings)
         {
             if (settings == null)
-                throw new SnowflakeException("Settings object cannot be null.");
+                throw new ArgumentException("Settings object cannot be null.");
 
             if (string.IsNullOrEmpty(settings.AuthInfo?.User))
-                throw new SnowflakeException("User name is either empty or null.");
+                throw new ArgumentException("User name is either empty or null.");
 
             if (string.IsNullOrEmpty(settings.AuthInfo?.Password))
-                throw new SnowflakeException("User password is either empty or null.");
+                throw new ArgumentException("User password is either empty or null.");
 
             if (string.IsNullOrEmpty(settings.AuthInfo?.Account))
-                throw new SnowflakeException("Snowflake account is either empty or null.");
+                throw new ArgumentException("Snowflake account is either empty or null.");
 
             if (settings.UrlInfo?.Protocol != "https" && settings.UrlInfo?.Protocol != "http")
-                throw new SnowflakeException("URL Protocol should be either http or https.");
+                throw new ArgumentException("URL Protocol should be either http or https.");
 
             if (string.IsNullOrEmpty(settings.UrlInfo?.Host))
-                throw new SnowflakeException("URL Host cannot be empty.");
+                throw new ArgumentException("URL Host cannot be empty.");
 
             if (!settings.UrlInfo.Host.ToLower().EndsWith(".snowflakecomputing.com"))
-                throw new SnowflakeException("URL Host should end up with '.snowflakecomputing.com'.");
+                throw new ArgumentException("URL Host should end up with '.snowflakecomputing.com'.");
         }
 
         /// <summary>

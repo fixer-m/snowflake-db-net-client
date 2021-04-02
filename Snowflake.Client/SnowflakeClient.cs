@@ -15,7 +15,7 @@ namespace Snowflake.Client
         /// <summary>
         /// Current Snowflake session.
         /// </summary>
-        public SnowflakeSession SnowflakeSession { get => _session; }
+        public SnowflakeSession SnowflakeSession => _session;
 
         private SnowflakeSession _session;
         private readonly RestClient _restClient;
@@ -28,13 +28,13 @@ namespace Snowflake.Client
         /// <param name="user">Username</param>
         /// <param name="password">Password</param>
         /// <param name="account">Account</param>
-        /// <param name="region">Region ("us-east-1" by default)</param>
+        /// <param name="region">Region: "us-east-1", etc. Required for all except for US West Oregon (us-west-2).</param>
         public SnowflakeClient(string user, string password, string account, string region = null)
-         : this(new AuthInfo(user, password, account, region))
+            : this(new AuthInfo(user, password, account, region))
         {
         }
 
-        /// <summary>
+        /// <summary> 
         /// Creates new Snowflake client. 
         /// </summary>
         /// <param name="authInfo">Auth information: user, password, account, region</param>
@@ -42,7 +42,7 @@ namespace Snowflake.Client
         /// <param name="urlInfo">URL information: host, protocol and port</param>
         /// <param name="jsonMapperOptions">JsonSerializerOptions which will be used to map response to your model</param>
         public SnowflakeClient(AuthInfo authInfo, SessionInfo sessionInfo = null, UrlInfo urlInfo = null, JsonSerializerOptions jsonMapperOptions = null)
-        : this(new SnowflakeClientSettings(authInfo, sessionInfo, urlInfo, jsonMapperOptions))
+            : this(new SnowflakeClientSettings(authInfo, sessionInfo, urlInfo, jsonMapperOptions))
         {
         }
 
@@ -63,29 +63,30 @@ namespace Snowflake.Client
         private void ValidateClientSettings(SnowflakeClientSettings settings)
         {
             if (settings == null)
-                throw new SnowflakeException($"Settings object cannot be null.");
+                throw new ArgumentException("Settings object cannot be null.");
 
-            if (string.IsNullOrEmpty(settings.AuthInfo.User))
-                throw new SnowflakeException($"User name is either empty or null.");
+            if (string.IsNullOrEmpty(settings.AuthInfo?.User))
+                throw new ArgumentException("User name is either empty or null.");
 
-            if (string.IsNullOrEmpty(settings.AuthInfo.Password))
-                throw new SnowflakeException($"User password is either empty or null.");
+            if (string.IsNullOrEmpty(settings.AuthInfo?.Password))
+                throw new ArgumentException("User password is either empty or null.");
 
-            if (string.IsNullOrEmpty(settings.AuthInfo.Account))
-                throw new SnowflakeException($"Snowflake account is either empty or null.");
+            if (string.IsNullOrEmpty(settings.AuthInfo?.Account))
+                throw new ArgumentException("Snowflake account is either empty or null.");
 
-            if (settings.UrlInfo.Protocol != "https" && settings.UrlInfo.Protocol != "http")
-                throw new SnowflakeException($"URL Protocol should be either http or https.");
+            if (settings.UrlInfo?.Protocol != "https" && settings.UrlInfo?.Protocol != "http")
+                throw new ArgumentException("URL Protocol should be either http or https.");
 
-            if (string.IsNullOrEmpty(settings.UrlInfo.Host))
-                throw new SnowflakeException($"URL Host cannot be empty.");
+            if (string.IsNullOrEmpty(settings.UrlInfo?.Host))
+                throw new ArgumentException("URL Host cannot be empty.");
+
+            if (!settings.UrlInfo.Host.ToLower().EndsWith(".snowflakecomputing.com"))
+                throw new ArgumentException("URL Host should end up with '.snowflakecomputing.com'.");
         }
 
         /// <summary>
         /// Initializes new Snowflake session.
         /// </summary>
-        /// <param name="authInfo">Auth information: user, password, account, region</param>
-        /// <param name="sessionInfo">Session information: role, schema, database, warehouse</param>
         /// <returns>True if session succesfully initialized</returns>
         public async Task<bool> InitNewSessionAsync()
         {
@@ -114,7 +115,7 @@ namespace Snowflake.Client
         public async Task<bool> RenewSessionAsync()
         {
             if (_session == null)
-                throw new SnowflakeException($"Session is not itialized yet.");
+                throw new SnowflakeException("Session is not itialized yet.");
 
             var renewSessionRequest = _requestBuilder.BuildRenewSessionRequest();
             var response = await _restClient.SendAsync<RenewSessionResponse>(renewSessionRequest).ConfigureAwait(false);
@@ -168,7 +169,7 @@ namespace Snowflake.Client
             var response = await QueryInternalAsync(sql, sqlParams).ConfigureAwait(false);
 
             if (response.Data.Chunks != null && response.Data.Chunks.Count > 0)
-                throw new SnowflakeException($"Downloading data from chunks is not implemented yet.");
+                throw new SnowflakeException("Downloading data from chunks is not implemented yet.");
 
             var result = SnowflakeDataMapper.MapTo<T>(response.Data.RowType, response.Data.RowSet);
             return result;

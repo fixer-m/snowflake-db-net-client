@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using Snowflake.Client.Helpers;
+using System;
+using System.Text.Json;
 
 namespace Snowflake.Client.Model
 {
@@ -34,7 +36,37 @@ namespace Snowflake.Client.Model
             UrlInfo = urlInfo ?? new UrlInfo();
             JsonMapperOptions = jsonMapperOptions ?? new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
 
-            UrlInfo.Host = authInfo.GetHostName();
+            if (string.IsNullOrEmpty(UrlInfo.Host))
+                UrlInfo.Host = BuildHostName(AuthInfo.Account, AuthInfo.Region);
+            else
+                UrlInfo.Host = ReplaceUnderscores(UrlInfo.Host);
+        }
+
+        private string BuildHostName(string account, string region)
+        {
+            if (string.IsNullOrEmpty(account))
+                throw new ArgumentException("Account name cannot be empty.");
+
+            var hostname = $"{ReplaceUnderscores(account)}.";
+
+            if (!string.IsNullOrEmpty(region) && region.ToLower() != "us-west-2")
+                hostname += $"{region}.";
+
+            var cloudTag = SnowflakeUtils.GetCloudTagByRegion(region);
+
+            if (!string.IsNullOrEmpty(cloudTag))
+                hostname += $"{cloudTag}.";
+
+            hostname += "snowflakecomputing.com";
+
+            return hostname.ToLower();
+        }
+
+        // Undescores in hostname will lead to SSL cert verification issue.
+        // See https://github.com/snowflakedb/snowflake-connector-net/issues/160#issuecomment-692883663
+        private string ReplaceUnderscores(string account)
+        {
+            return account.Replace("_", "-");
         }
     }
 }

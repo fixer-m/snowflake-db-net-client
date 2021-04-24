@@ -65,10 +65,16 @@ IEnumerable<Empolyee> employees = await snowflakeClient.QueryAsync<Employee>("SE
 
 // Your model
 public class Employee
-{
-    public string Title { get; set; }
-    public int? Employee_Id { get; set; }
-    public int? Manager_Id { get; set; }
+{ 
+    public int Id { get; set; }
+    public float? Rating { get; set; }
+    public bool? IsFired { get; set; }
+    public string FirstName { get; set; }
+    public string[] ContactLinks { get; set; } // supports arrays and lists
+    public EmplyeeInfo Info { get; set; } // supports custom json ojects ("object" and "variant")
+    public DateTimeOffset HiredAt { get; set; } // DateTimeOffset for "timestamp_ltz" and "timestamp_tz"
+    public DateTime FiredAt { get; set; } // DateTime for "date", "time" and "timestamp_ntz"
+    public byte[] Image { get; set; } // bytes array/list for "binary"
 }
 ```
 

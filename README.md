@@ -30,7 +30,7 @@ string useRoleResult = await snowflakeClient.ExecuteScalarAsync("USE ROLE ACCOUN
 // Executes query and returns affected rows count
 int affectedRows = await snowflakeClient.ExecuteAsync("INSERT INTO EMPLOYEES Title VALUES (?);", "Dev");
 
-// Parameters binding options:
+// Executes query with parameters (several syntax options):
 var employees1 = await snowflakeClient.QueryAsync<Employee>("SELECT * FROM EMPLOYEES WHERE TITLE = ?", "Programmer");
 var employees2 = await snowflakeClient.QueryAsync<Employee>("SELECT * FROM EMPLOYEES WHERE ID IN (?,?)", new int[] { 1, 2 });
 var employees3 = await snowflakeClient.QueryAsync<Employee>("SELECT * FROM EMPLOYEES WHERE TITLE = :Title", new Employee() { Title = "Programmer" });
@@ -41,16 +41,16 @@ var employees4 = await snowflakeClient.QueryAsync<Employee>("SELECT * FROM EMPLO
 Official [Snowflake.Data](https://github.com/snowflakedb/snowflake-connector-net) connector implements ADO.NET interfaces (IDbConnection, IDataReader etc), so you have to work with it as with usual database on a low level (however under the hood it actually uses Snowflake REST API). In contrast this library is designed as REST API client (or wrapper) with straightforward and clean API. [Read more](https://medium.com/@fixer_m/better-net-client-for-snowflake-db-ecb48c48c872) about it.
 
 Improvements in Snowflake.Client vs Snowflake.Data: 
-- Performance: Re-uses Snowflake session, i.e. less roundtrips to SF
+- Performance: Re-uses Snowflake session, i.e. ~3x less roundtrips to SF
 - Performance: Doesn't have additional intermediate mapping from SF to DB types 
-- Better API: Clean and simple syntax vs verbose ADO.NET syntax
-- Third party dependencies: 0 vs 4
+- Better API: Clean and simple API vs verbose ADO.NET 
+- Less third party dependencies: 0 vs 4
 
 Added features in Snowflake.Client vs Snowflake.Data:
 - Map response data to entities
 - Supports `describeOnly` flag
-- Has option to return raw data from Snowflake response
-- Exposes Snowflake session info
+- Has option to return raw data from Snowflake response (including QueryID and more)
+- Exposes Snowflake session info 
 - New SQL parameter binding API with a few options (inspired by Dapper)
 
 Missing features in Snowflake.Client vs Snowflake.Data:

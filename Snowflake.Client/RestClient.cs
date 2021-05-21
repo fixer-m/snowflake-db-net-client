@@ -38,7 +38,7 @@ namespace Snowflake.Client
         {
             SetServicePointOptions(request.RequestUri);
 
-            var response = await _httpClient.SendAsync(request).ConfigureAwait(false);
+            var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -51,7 +51,7 @@ namespace Snowflake.Client
         {
             SetServicePointOptions(request.RequestUri);
 
-            var response = _httpClient.SendAsync(request).Result;
+            var response = _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).Result;
             response.EnsureSuccessStatusCode();
 
             var json = response.Content.ReadAsStringAsync().Result;

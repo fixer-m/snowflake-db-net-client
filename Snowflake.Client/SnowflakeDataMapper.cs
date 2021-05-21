@@ -64,7 +64,7 @@ namespace Snowflake.Client
                 return value;
 
             if (columnType == "boolean")
-                return value == "1" || value == "true" ? "true" : "false";
+                return value == "1" || value.ToLower() == "true" ? "true" : "false";
 
             var sfDateTimeOffsetTypes = new List<string>() { "timestamp_ltz", "timestamp_tz" };
             if (sfDateTimeOffsetTypes.Contains(columnType))

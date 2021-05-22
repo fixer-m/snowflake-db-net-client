@@ -4,13 +4,13 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## Snowflake.Client
-Unofficial .NET client for [Snowflake](https://www.snowflake.com) REST API.  
-Execute SQL queries in Snowflake and get mapped response back.  
-Read my [blog post](https://medium.com/@fixer_m/better-net-client-for-snowflake-db-ecb48c48c872) about it. 
+.NET client for [Snowflake](https://www.snowflake.com) REST API.  
+Provides API to execute SQL queries and map response to your models.  
+Read my [blog post](https://medium.com/@fixer_m/better-net-client-for-snowflake-db-ecb48c48c872) about the ideas behind it. 
 
 ### Main Features
 - User/Password authentication
-- Execute SQL queries with parameters
+- Execute any SQL queries with parameters
 - Map response data to your models
 
 ### Basic Usage
@@ -38,7 +38,7 @@ var employees4 = await snowflakeClient.QueryAsync<Employee>("SELECT * FROM EMPLO
 ```
 
 ### Comparison with Snowflake.Data 
-Official [Snowflake.Data](https://github.com/snowflakedb/snowflake-connector-net) connector implements ADO.NET interfaces (IDbConnection, IDataReader etc), so you have to work with it as with usual database on a low level (however under the hood it actually uses Snowflake REST API). In contrast this library is designed as REST API client (or wrapper) with straightforward and clean API. [Read more](https://medium.com/@fixer_m/better-net-client-for-snowflake-db-ecb48c48c872) about it.
+Official [Snowflake.Data](https://github.com/snowflakedb/snowflake-connector-net) connector implements ADO.NET interfaces (IDbConnection, IDataReader etc), so you have to work with it as with usual database, however under the hood it actually uses Snowflake REST API. In contrast Snowflake.Client is designed as REST API client wrapper with convenient API. [Read more](https://medium.com/@fixer_m/better-net-client-for-snowflake-db-ecb48c48c872) about it.
 
 Improvements in Snowflake.Client vs Snowflake.Data: 
 - Performance: Re-uses Snowflake session, i.e. ~3x less roundtrips to SF
@@ -81,12 +81,14 @@ public class Employee
 Internally it uses [System.Text.Json](https://devblogs.microsoft.com/dotnet/try-the-new-system-text-json-apis/) to deserialize Snowflake data to your model. It uses [default deserialize behavior](https://docs.microsoft.com/ru-ru/dotnet/api/system.text.json.jsonserializer.deserialize?view=net-5.0), except `PropertyNameCaseInsensitive` is set to **true**.  
 You can override this behavior by providing custom `JsonSerializerOptions`. You can pass it in `SnowflakeClient` constructor or you can set it directly via `SnowflakeDataMapper.SetJsonMapperOptions(jsonSerializerOptions)`.
 
-If you want you can use `SnowflakeDataMapper.MapTo<T>` to map Snowflake data response manually: 
+### Explicit mapping 
+You may want to get raw response from Snowflake, for example, to get **QueryID** or some other information.  
+In this case you can use mapper explicitly: 
 ```csharp
 // Executes query and returns raw response from Snowflake (rows, columns and query information)
 var queryDataResponse = await snowflakeClient.QueryRawResponseAsync("SELECT * FROM MASTER.PUBLIC.EMPLOYEES;");
 
-// Maps Snowflake rows and columns to your model (via System.Text.Json)
+// Maps Snowflake rows and columns to your model (internally uses System.Text.Json)
 var employees = SnowflakeDataMapper.MapTo<Employee>(queryDataResponse.Columns, queryDataResponse.Rows);
 ```
 

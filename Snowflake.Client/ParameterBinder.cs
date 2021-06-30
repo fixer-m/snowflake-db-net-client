@@ -30,7 +30,30 @@ namespace Snowflake.Client
             {
                 var elementType = GetItemTypeFromCollection(paramType);
 
-                if (IsSimpleType(elementType))
+                if (IsDictionary(param))
+                {
+                    if (!(param is IEnumerable<KeyValuePair<string, object>>))
+                    {
+                        throw new ArgumentException("Only IEnumerable<KeyValuePair<string, object> is supported");
+                    }
+
+                    var dict = param as IEnumerable<KeyValuePair<string, object>>;
+                    foreach (var item in dict)
+                    {
+                        var type = item.Value.GetType();
+                        if (IsSimpleType(type))
+                        {
+                            bindings.Add(item.Key, BuildParamFromSimpleType(item.Value, type));
+                        }
+                        else
+                        {
+                            throw new ArgumentException($"Parameter binding doesn't support type {type.Name} in IEnumerable<KeyValuePair<string, object>> values.");
+                        }
+                    }
+
+                    return bindings;
+                }
+                else if (IsSimpleType(elementType))
                 {
                     int i = 0;
                     foreach (var item in enumerable)
@@ -67,6 +90,14 @@ namespace Snowflake.Client
                 paramType = underlyingType;
 
             return paramType == typeof(string) || !paramType.IsClass && !IsCustomValueType(paramType) || paramType == typeof(byte[]);
+        }
+
+        public static bool IsDictionary(object o)
+        {
+            if (o == null) return false;
+            return o is IDictionary &&
+                   o.GetType().IsGenericType &&
+                   o.GetType().GetGenericTypeDefinition().IsAssignableFrom(typeof(Dictionary<,>));
         }
 
         private static bool IsCustomValueType(Type type)

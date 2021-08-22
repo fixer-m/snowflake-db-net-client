@@ -16,11 +16,11 @@ namespace Snowflake.Client
             if (param == null)
                 return null;
 
-            var bindings = new Dictionary<string, ParamBinding>();
             var paramType = param.GetType();
 
             if (IsSimpleType(paramType))
             {
+                var bindings = new Dictionary<string, ParamBinding>();
                 var binding = BuildParamFromSimpleType(param, paramType);
                 bindings.Add("1", binding);
                 return bindings;
@@ -28,57 +28,61 @@ namespace Snowflake.Client
 
             if (param is IEnumerable enumerable)
             {
-                var elementType = GetItemTypeFromCollection(paramType);
-
-                if (IsDictionary(param))
-                {
-                    if (!(param is IEnumerable<KeyValuePair<string, object>>))
-                    {
-                        throw new ArgumentException("Only IEnumerable<KeyValuePair<string, object> is supported");
-                    }
-
-                    var dict = param as IEnumerable<KeyValuePair<string, object>>;
-                    foreach (var item in dict)
-                    {
-                        var type = item.Value.GetType();
-                        if (IsSimpleType(type))
-                        {
-                            bindings.Add(item.Key, BuildParamFromSimpleType(item.Value, type));
-                        }
-                        else
-                        {
-                            throw new ArgumentException($"Parameter binding doesn't support type {type.Name} in IEnumerable<KeyValuePair<string, object>> values.");
-                        }
-                    }
-
-                    return bindings;
-                }
-                else if (IsSimpleType(elementType))
-                {
-                    int i = 0;
-                    foreach (var item in enumerable)
-                    {
-                        i++;
-                        bindings.Add(i.ToString(), BuildParamFromSimpleType(item, elementType));
-                    }
-
-                    return bindings;
-                }
-
-                throw new ArgumentException($"Parameter binding doesn't support type {elementType.Name} in collections.");
+                return BuildParamsFromEnumerable(paramType, enumerable);
             }
 
-            bindings = BuildParamsFromComplexType(param, paramType);
+            return BuildParamsFromComplexType(param, paramType);
+        }
 
-            return bindings;
+        private static Dictionary<string, ParamBinding> BuildParamsFromEnumerable(Type paramType, IEnumerable enumerable)
+        {
+            var result = new Dictionary<string, ParamBinding>();
+
+            if (IsDictionary(enumerable))
+            {
+                if (!(enumerable is IEnumerable<KeyValuePair<string, object>> dictionary))
+                {
+                    throw new ArgumentException("Only IEnumerable<KeyValuePair<string, object> is supported");
+                }
+
+                foreach (var item in dictionary)
+                {
+                    var type = item.Value.GetType();
+                    if (IsSimpleType(type))
+                    {
+                        result.Add(item.Key, BuildParamFromSimpleType(item.Value, type));
+                    }
+                    else
+                    {
+                        throw new ArgumentException($"Parameter binding doesn't support type {type.Name} in IEnumerable<KeyValuePair<string, object>> values.");
+                    }
+                }
+
+                return result;
+            }
+
+            var elementType = GetItemTypeFromCollection(paramType);
+            if (IsSimpleType(elementType))
+            {
+                int i = 0;
+                foreach (var item in enumerable)
+                {
+                    i++;
+                    result.Add(i.ToString(), BuildParamFromSimpleType(item, elementType));
+                }
+
+                return result;
+            }
+
+            throw new ArgumentException($"Parameter binding doesn't support type {elementType.Name} in collections.");
         }
 
         private static Type GetItemTypeFromCollection(Type type)
         {
             var elementType = type.GetGenericArguments().FirstOrDefault()
                                 ?? type.GetElementType()
-                                ?? type.GetInterfaces().FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IEnumerable<>))
-                                       .GenericTypeArguments.FirstOrDefault();
+                                ?? type.GetInterfaces().FirstOrDefault(t => t.IsGenericType
+                                    && t.GetGenericTypeDefinition() == typeof(IEnumerable<>)).GenericTypeArguments.FirstOrDefault();
 
             return elementType;
         }
@@ -92,7 +96,7 @@ namespace Snowflake.Client
             return paramType == typeof(string) || !paramType.IsClass && !IsCustomValueType(paramType) || paramType == typeof(byte[]);
         }
 
-        public static bool IsDictionary(object o)
+        private static bool IsDictionary(object o)
         {
             if (o == null) return false;
             return o is IDictionary &&

@@ -77,6 +77,77 @@ namespace Snowflake.Client.Tests.UnitTests
         }
 
         [Test]
+        public void BuildParameters_Dictionary_Ints()
+        {
+            var values = new Dictionary<string, object>
+            {
+                { "First", 1 },
+                { "Second", 2 }
+            };
+
+            var bindings = ParameterBinder.BuildParameterBindings(values);
+
+            Assert.AreEqual(values.Count(), bindings.Count);
+
+            int i = 0;
+            foreach (var binding in bindings)
+            {
+                Assert.IsTrue(binding.Key == values.Keys.ElementAt(i));
+                Assert.IsTrue(binding.Value.Type == "FIXED");
+                Assert.IsTrue(binding.Value.Value == values.Values.ElementAt(i).ToString());
+
+                i++;
+            }
+        }
+
+        [Test]
+        public void BuildParameters_Dictionary_DifferentTypes()
+        {
+            var values = new Dictionary<string, object>
+            {
+                { "1", "Sometext" },
+                { "2", true },
+                { "3", 777 },
+                { "4", 26.5F },
+                { "5", 19.239834M},
+                { "6", Guid.Parse("e7412bbf-88ee-4149-b341-101e0f72ec7c") },
+                { "7", new byte[] { 0, 128, 255 } }
+            };
+
+            var bindings = ParameterBinder.BuildParameterBindings(values);
+
+            Assert.AreEqual(values.Count(), bindings.Count);
+
+
+            for (int i = 0; i < bindings.Count; i++)
+            {
+                Assert.IsTrue(bindings.Keys.ElementAt(i) == values.Keys.ElementAt(i));
+            }
+        }
+
+        [Test]
+        public void BuildParameters_Dictionary_ComplexType()
+        {
+            var values = new Dictionary<string, object>
+            {
+                { "1", new CustomClass() { Property = "Str" } }
+            };
+
+            Assert.Throws<ArgumentException>(() => ParameterBinder.BuildParameterBindings(values));
+        }
+
+        [Test]
+        public void BuildParameters_Dictionary_CustomClass()
+        {
+            var values = new Dictionary<string, CustomClass>
+            {
+                { "1", new CustomClass() { Property = "Str" } }
+            };
+
+            Assert.Throws<ArgumentException>(() => ParameterBinder.BuildParameterBindings(values));
+        }
+
+        [Test]
         public void BuildParameters_ListOfComplexTypes()
         {
             var values = GetCustomClassCollection().ToList();
@@ -94,7 +165,7 @@ namespace Snowflake.Client.Tests.UnitTests
 
         private static IEnumerable<CustomClass> GetCustomClassCollection()
         {
-            yield return new CustomClass() { Property = "one" } ;
+            yield return new CustomClass() { Property = "one" };
             yield return new CustomClass() { Property = "two" };
         }
 

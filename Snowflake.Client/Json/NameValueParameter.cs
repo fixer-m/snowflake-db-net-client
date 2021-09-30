@@ -9,5 +9,10 @@ namespace Snowflake.Client.Json
 
         [JsonPropertyName("value")]
         public object Value { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Name}: {Value}";
+        }
     }
 }

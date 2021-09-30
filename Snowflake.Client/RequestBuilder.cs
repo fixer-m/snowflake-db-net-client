@@ -10,7 +10,7 @@ using System.Web;
 
 namespace Snowflake.Client
 {
-    public class RequestBuilder
+    internal class RequestBuilder
     {
         private readonly UrlInfo _urlInfo;
         private readonly JsonSerializerOptions _jsonSerializerOptions;
@@ -19,7 +19,7 @@ namespace Snowflake.Client
         private string _masterToken;
         private string _sessionToken;
 
-        public RequestBuilder(UrlInfo urlInfo)
+        internal RequestBuilder(UrlInfo urlInfo)
         {
             this._urlInfo = urlInfo;
 
@@ -31,19 +31,19 @@ namespace Snowflake.Client
             this._clientInfo = new ClientAppInfo();
         }
 
-        public void SetSessionTokens(string sessionToken, string masterToken)
+        internal void SetSessionTokens(string sessionToken, string masterToken)
         {
             this._sessionToken = sessionToken;
             this._masterToken = masterToken;
         }
 
-        public void ClearSessionTokens()
+        internal void ClearSessionTokens()
         {
             this._sessionToken = null;
             this._masterToken = null;
         }
 
-        public HttpRequestMessage BuildLoginRequest(AuthInfo authInfo, SessionInfo sessionInfo)
+        internal HttpRequestMessage BuildLoginRequest(AuthInfo authInfo, SessionInfo sessionInfo)
         {
             var requestUri = BuildLoginUrl(sessionInfo);
 
@@ -64,7 +64,7 @@ namespace Snowflake.Client
             return request;
         }
 
-        public HttpRequestMessage BuildCancelQueryRequest(string requestId)
+        internal HttpRequestMessage BuildCancelQueryRequest(string requestId)
         {
             var requestUri = BuildCancelQueryUrl();
             var requestBody = new CancelQueryRequest()
@@ -78,7 +78,7 @@ namespace Snowflake.Client
             return request;
         }
 
-        public HttpRequestMessage BuildRenewSessionRequest()
+        internal HttpRequestMessage BuildRenewSessionRequest()
         {
             var requestUri = BuildRenewSessionUrl();
             var requestBody = new RenewSessionRequest()
@@ -93,7 +93,7 @@ namespace Snowflake.Client
             return request;
         }
 
-        public HttpRequestMessage BuildQueryRequest(string sql, object sqlParams, bool describeOnly)
+        internal HttpRequestMessage BuildQueryRequest(string sql, object sqlParams, bool describeOnly)
         {
             var queryUri = BuildQueryUrl();
 
@@ -110,7 +110,7 @@ namespace Snowflake.Client
             return request;
         }
 
-        public HttpRequestMessage BuildCloseSessionRequest()
+        internal HttpRequestMessage BuildCloseSessionRequest()
         {
             var queryParams = new Dictionary<string, string>();
             queryParams[SnowflakeConst.SF_QUERY_SESSION_DELETE] = "true";
@@ -122,7 +122,7 @@ namespace Snowflake.Client
             return request;
         }
 
-        public Uri BuildLoginUrl(SessionInfo sessionInfo)
+        internal Uri BuildLoginUrl(SessionInfo sessionInfo)
         {
             var queryParams = new Dictionary<string, string>();
             queryParams[SnowflakeConst.SF_QUERY_WAREHOUSE] = sessionInfo.Warehouse;
@@ -135,7 +135,7 @@ namespace Snowflake.Client
             return loginUrl;
         }
 
-        public Uri BuildCancelQueryUrl()
+        internal Uri BuildCancelQueryUrl()
         {
             var queryParams = new Dictionary<string, string>();
             queryParams[SnowflakeConst.SF_QUERY_REQUEST_ID] = Guid.NewGuid().ToString();
@@ -145,7 +145,7 @@ namespace Snowflake.Client
             return url;
         }
 
-        public Uri BuildRenewSessionUrl()
+        internal Uri BuildRenewSessionUrl()
         {
             var queryParams = new Dictionary<string, string>();
             queryParams[SnowflakeConst.SF_QUERY_REQUEST_ID] = Guid.NewGuid().ToString();
@@ -164,7 +164,7 @@ namespace Snowflake.Client
             return loginUrl;
         }
 
-        public Uri BuildUri(string basePath, Dictionary<string, string> queryParams = null)
+        internal Uri BuildUri(string basePath, Dictionary<string, string> queryParams = null)
         {
             UriBuilder uriBuilder = new UriBuilder();
             uriBuilder.Scheme = _urlInfo.Protocol;

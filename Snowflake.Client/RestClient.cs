@@ -3,16 +3,17 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Authentication;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Snowflake.Client
 {
-    public class RestClient
+    internal class RestClient
     {
         private HttpClient _httpClient;
         private readonly JsonSerializerOptions _jsonSerializerOptions;
 
-        public RestClient()
+        internal RestClient()
         {
             var httpClientHandler = new HttpClientHandler
             {
@@ -29,16 +30,16 @@ namespace Snowflake.Client
             };
         }
 
-        public void SetHttpClient(HttpClient httpClient)
+        internal void SetHttpClient(HttpClient httpClient)
         {
             _httpClient = httpClient;
         }
 
-        public async Task<T> SendAsync<T>(HttpRequestMessage request)
+        internal async Task<T> SendAsync<T>(HttpRequestMessage request, CancellationToken ct)
         {
             SetServicePointOptions(request.RequestUri);
 
-            var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+            var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -47,7 +48,7 @@ namespace Snowflake.Client
         }
 
         [Obsolete]
-        public T Send<T>(HttpRequestMessage request)
+        internal T Send<T>(HttpRequestMessage request)
         {
             SetServicePointOptions(request.RequestUri);
 

@@ -9,9 +9,10 @@ namespace Snowflake.Client
 {
     // Bindings: https://docs.snowflake.com/en/user-guide/python-connector-api.html
     // Based on https://github.com/snowflakedb/snowflake-connector-net/blob/master/Snowflake.Data/Core/SFDataConverter.cs
-    public static class ParameterBinder
+
+    internal static class ParameterBinder
     {
-        public static Dictionary<string, ParamBinding> BuildParameterBindings(object param)
+        internal static Dictionary<string, ParamBinding> BuildParameterBindings(object param)
         {
             if (param == null)
                 return null;

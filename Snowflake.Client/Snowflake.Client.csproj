@@ -19,4 +19,8 @@ Provides straightforward and efficient way to execute SQL queries in Snowflake a
     <PackageReference Include="System.Text.Json" Version="4.6.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Snowflake.Client.Tests" />
+  </ItemGroup>
+
 </Project>

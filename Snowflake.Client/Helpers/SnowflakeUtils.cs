@@ -6,10 +6,10 @@ using Snowflake.Client.Model;
 
 namespace Snowflake.Client.Helpers
 {
-    public static class SnowflakeUtils
+    internal static class SnowflakeUtils
     {
         // Based on https://github.com/snowflakedb/snowflake-connector-net/blob/master/Snowflake.Data/Core/ResultSetUtil.cs
-        public static long GetAffectedRowsCount(QueryExecResponse response)
+        internal static long GetAffectedRowsCount(QueryExecResponse response)
         {
             int statementTypeId = response.Data.StatementTypeId;
 
@@ -50,7 +50,7 @@ namespace Snowflake.Client.Helpers
         }
 
         // Based on: https://docs.snowflake.com/en/user-guide/admin-account-identifier.html#locator-formats-by-cloud-platform-and-region
-        public static string GetCloudTagByRegion(string region)
+        internal static string GetCloudTagByRegion(string region)
         {
             if (string.IsNullOrEmpty(region))
                 return "";

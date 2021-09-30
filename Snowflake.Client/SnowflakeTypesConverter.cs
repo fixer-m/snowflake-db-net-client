@@ -6,11 +6,11 @@ namespace Snowflake.Client
     /// <summary>
     /// Based on https://github.com/snowflakedb/snowflake-connector-net/blob/master/Snowflake.Data/Core/SFDataConverter.cs
     /// </summary>
-    public static class SnowflakeTypesConverter
+    internal static class SnowflakeTypesConverter
     {
         private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        public static DateTime ConvertToDateTime(string value, string snowflakeType)
+        internal static DateTime ConvertToDateTime(string value, string snowflakeType)
         {
             switch (snowflakeType)
             {
@@ -18,7 +18,8 @@ namespace Snowflake.Client
                     long srcValLong = long.Parse(value);
                     return UnixEpoch.AddDays(srcValLong);
 
-                case "time":
+                case "time": // to timespan? https://github.com/snowflakedb/snowflake-connector-net/issues/327
+                             // https://github.com/snowflakedb/snowflake-connector-net/commit/1fa03d92cdf6f7ae5720fdef8ecf25371f0f4c95
                 case "timestamp_ntz":
                     var secAndNsecTuple = ExtractTimestamp(value);
                     var tickDiff = secAndNsecTuple.Item1 * 10000000L + secAndNsecTuple.Item2 / 100L;
@@ -29,7 +30,7 @@ namespace Snowflake.Client
             }
         }
 
-        public static DateTimeOffset ConvertToDateTimeOffset(string value, string snowflakeType)
+        internal static DateTimeOffset ConvertToDateTimeOffset(string value, string snowflakeType)
         {
             switch (snowflakeType)
             {
@@ -52,7 +53,7 @@ namespace Snowflake.Client
             }
         }
 
-        public static string ConvertToTimestampTz(DateTimeOffset value)
+        internal static string ConvertToTimestampTz(DateTimeOffset value)
         {
             var ticksPart = value.UtcTicks - UnixEpoch.Ticks;
             var minutesPart = value.Offset.TotalMinutes + 1440;
@@ -60,14 +61,14 @@ namespace Snowflake.Client
             return $"{ticksPart}00 {minutesPart}";
         }
 
-        public static string ConvertToTimestampNtz(DateTime value)
+        internal static string ConvertToTimestampNtz(DateTime value)
         {
             var diff = value.Subtract(UnixEpoch);
 
             return $"{diff.Ticks}00";
         }
 
-        public static string BytesToHex(byte[] bytes)
+        internal static string BytesToHex(byte[] bytes)
         {
             var hexBuilder = new StringBuilder(bytes.Length * 2);
             foreach (byte b in bytes)
@@ -78,7 +79,7 @@ namespace Snowflake.Client
             return hexBuilder.ToString();
         }
 
-        public static byte[] HexToBytes(string hex)
+        internal static byte[] HexToBytes(string hex)
         {
             int NumberChars = hex.Length;
             byte[] bytes = new byte[NumberChars / 2];

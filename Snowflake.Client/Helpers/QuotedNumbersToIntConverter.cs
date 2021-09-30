@@ -9,7 +9,7 @@ namespace Snowflake.Client.Helpers
     /// <summary>
     /// Allows to deserialize quoted numbers (i.e. strings) into int values
     /// </summary>
-    public class QuotedNumbersToIntConverter : JsonConverter<int?>
+    internal class QuotedNumbersToIntConverter : JsonConverter<int?>
     {
         public override int? Read(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options)
         {

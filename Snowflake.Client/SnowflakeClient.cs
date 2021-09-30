@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Snowflake.Client
@@ -88,19 +89,19 @@ namespace Snowflake.Client
         /// Initializes new Snowflake session.
         /// </summary>
         /// <returns>True if session succesfully initialized</returns>
-        public async Task<bool> InitNewSessionAsync()
+        public async Task<bool> InitNewSessionAsync(CancellationToken ct = default)
         {
-            _session = await AuthenticateAsync(_clientSettings.AuthInfo, _clientSettings.SessionInfo).ConfigureAwait(false);
+            _session = await AuthenticateAsync(_clientSettings.AuthInfo, _clientSettings.SessionInfo, ct).ConfigureAwait(false);
             _requestBuilder.SetSessionTokens(_session.SessionToken, _session.MasterToken);
 
             return true;
         }
 
-        private async Task<SnowflakeSession> AuthenticateAsync(AuthInfo authInfo, SessionInfo sessionInfo)
+        private async Task<SnowflakeSession> AuthenticateAsync(AuthInfo authInfo, SessionInfo sessionInfo, CancellationToken ct)
         {
             var loginRequest = _requestBuilder.BuildLoginRequest(authInfo, sessionInfo);
 
-            var response = await _restClient.SendAsync<LoginResponse>(loginRequest).ConfigureAwait(false);
+            var response = await _restClient.SendAsync<LoginResponse>(loginRequest, ct).ConfigureAwait(false);
 
             if (!response.Success)
                 throw new SnowflakeException($"Athentication failed. Message: {response.Message}", response.Code);
@@ -112,13 +113,13 @@ namespace Snowflake.Client
         /// Renew session
         /// </summary>
         /// <returns>True if session succesfully renewed</returns>
-        public async Task<bool> RenewSessionAsync()
+        public async Task<bool> RenewSessionAsync(CancellationToken ct = default)
         {
             if (_session == null)
                 throw new SnowflakeException("Session is not itialized yet.");
 
             var renewSessionRequest = _requestBuilder.BuildRenewSessionRequest();
-            var response = await _restClient.SendAsync<RenewSessionResponse>(renewSessionRequest).ConfigureAwait(false);
+            var response = await _restClient.SendAsync<RenewSessionResponse>(renewSessionRequest, ct).ConfigureAwait(false);
 
             if (!response.Success)
                 throw new SnowflakeException($"Renew session failed. Message: {response.Message}", response.Code);
@@ -135,9 +136,9 @@ namespace Snowflake.Client
         /// <param name="sql">The SQL to execute.</param>
         /// <param name="sqlParams">The parameters to use for this command.</param>
         /// <returns>The first cell value returned as string.</returns>
-        public async Task<string> ExecuteScalarAsync(string sql, object sqlParams = null)
+        public async Task<string> ExecuteScalarAsync(string sql, object sqlParams = null, CancellationToken ct = default)
         {
-            var response = await QueryInternalAsync(sql, sqlParams).ConfigureAwait(false);
+            var response = await QueryInternalAsync(sql, sqlParams, false, ct).ConfigureAwait(false);
             var rawResult = response.Data.RowSet.FirstOrDefault()?.FirstOrDefault();
 
             return rawResult;
@@ -149,9 +150,9 @@ namespace Snowflake.Client
         /// <param name="sql">The SQL to execute for this query.</param>
         /// <param name="sqlParams">The parameters to use for this query.</param>
         /// <returns>The number of rows affected.</returns>
-        public async Task<long> ExecuteAsync(string sql, object sqlParams = null)
+        public async Task<long> ExecuteAsync(string sql, object sqlParams = null, CancellationToken ct = default)
         {
-            var response = await QueryInternalAsync(sql, sqlParams).ConfigureAwait(false);
+            var response = await QueryInternalAsync(sql, sqlParams, false, ct).ConfigureAwait(false);
             long affectedRows = SnowflakeUtils.GetAffectedRowsCount(response);
 
             return affectedRows;
@@ -164,9 +165,9 @@ namespace Snowflake.Client
         /// <param name="sql">The SQL to execute.</param>
         /// <param name="sqlParams">The parameters to use for this command.</param>
         /// <returns>A sequence of data of the supplied type: one instance per row.</returns>
-        public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object sqlParams = null)
+        public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object sqlParams = null, CancellationToken ct = default)
         {
-            var response = await QueryInternalAsync(sql, sqlParams).ConfigureAwait(false);
+            var response = await QueryInternalAsync(sql, sqlParams, false, ct).ConfigureAwait(false);
 
             if (response.Data.Chunks != null && response.Data.Chunks.Count > 0)
                 throw new SnowflakeException("Downloading data from chunks is not implemented yet.");
@@ -182,9 +183,9 @@ namespace Snowflake.Client
         /// <param name="sqlParams">The parameters to use for this command.</param>
         /// <param name="describeOnly">Return only columns information.</param>
         /// <returns>Rows and columns.</returns>
-        public async Task<SnowflakeQueryRawResponse> QueryRawResponseAsync(string sql, object sqlParams = null, bool describeOnly = false)
+        public async Task<SnowflakeQueryRawResponse> QueryRawResponseAsync(string sql, object sqlParams = null, bool describeOnly = false, CancellationToken ct = default)
         {
-            var response = await QueryInternalAsync(sql, sqlParams, describeOnly).ConfigureAwait(false);
+            var response = await QueryInternalAsync(sql, sqlParams, describeOnly, ct).ConfigureAwait(false);
 
             return new SnowflakeQueryRawResponse(response.Data);
         }
@@ -193,11 +194,11 @@ namespace Snowflake.Client
         /// Cancels running query
         /// </summary>
         /// <param name="requestId">Request ID to cancel.</param>
-        public async Task<bool> CancelQueryAsync(string requestId)
+        public async Task<bool> CancelQueryAsync(string requestId, CancellationToken ct = default)
         {
             var cancelQueryRequest = _requestBuilder.BuildCancelQueryRequest(requestId);
 
-            var response = await _restClient.SendAsync<NullDataResponse>(cancelQueryRequest).ConfigureAwait(false);
+            var response = await _restClient.SendAsync<NullDataResponse>(cancelQueryRequest, ct).ConfigureAwait(false);
 
             if (!response.Success)
                 throw new SnowflakeException($"Cancelling query failed. Message: {response.Message}", response.Code);
@@ -205,7 +206,7 @@ namespace Snowflake.Client
             return true;
         }
 
-        private async Task<QueryExecResponse> QueryInternalAsync(string sql, object sqlParams = null, bool describeOnly = false)
+        private async Task<QueryExecResponse> QueryInternalAsync(string sql, object sqlParams = null, bool describeOnly = false, CancellationToken ct = default)
         {
             if (_session == null)
             {
@@ -213,13 +214,13 @@ namespace Snowflake.Client
             }
 
             var queryRequest = _requestBuilder.BuildQueryRequest(sql, sqlParams, describeOnly);
-            var response = await _restClient.SendAsync<QueryExecResponse>(queryRequest).ConfigureAwait(false);
+            var response = await _restClient.SendAsync<QueryExecResponse>(queryRequest, ct).ConfigureAwait(false);
 
             // Auto renew session, if it's expired
             if (response.Code == 390112)
             {
                 await RenewSessionAsync().ConfigureAwait(false);
-                response = await _restClient.SendAsync<QueryExecResponse>(queryRequest).ConfigureAwait(false);
+                response = await _restClient.SendAsync<QueryExecResponse>(queryRequest, ct).ConfigureAwait(false);
             }
 
             if (!response.Success)
@@ -232,10 +233,10 @@ namespace Snowflake.Client
         /// Closes current Snowflake session. 
         /// </summary>
         /// <returns>True if session was successfully closed.</returns>
-        public async Task<bool> CloseSessionAsync()
+        public async Task<bool> CloseSessionAsync(CancellationToken ct = default)
         {
             var closeSessionRequest = _requestBuilder.BuildCloseSessionRequest();
-            var response = await _restClient.SendAsync<CloseResponse>(closeSessionRequest).ConfigureAwait(false);
+            var response = await _restClient.SendAsync<CloseResponse>(closeSessionRequest, ct).ConfigureAwait(false);
 
             _session = null;
             _requestBuilder.ClearSessionTokens();

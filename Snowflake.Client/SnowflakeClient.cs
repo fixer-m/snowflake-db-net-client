@@ -219,7 +219,7 @@ namespace Snowflake.Client
             // Auto renew session, if it's expired
             if (response.Code == 390112)
             {
-                await RenewSessionAsync().ConfigureAwait(false);
+                await RenewSessionAsync(ct).ConfigureAwait(false);
                 response = await _restClient.SendAsync<QueryExecResponse>(queryRequest, ct).ConfigureAwait(false);
             }
 

@@ -37,6 +37,15 @@ namespace Snowflake.Client.Helpers
                     }
                     break;
 
+                case SnowflakeStatementType.COPY_UNLOAD:
+                    var rowsUnoadedColumn = response.Data.RowType.FirstOrDefault(c => c.Name == "rows_unloaded");
+                    if (rowsUnoadedColumn != null)
+                    {
+                        var rowsUnloadedColumnIndex = response.Data.RowType.IndexOf(rowsUnoadedColumn);
+                        updateCount = long.Parse(response.Data.RowSet[0][rowsUnloadedColumnIndex]);
+                    }
+                    break;
+
                 case SnowflakeStatementType.SELECT:
                     updateCount = -1;
                     break;

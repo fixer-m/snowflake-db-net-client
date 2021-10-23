@@ -12,6 +12,7 @@ namespace Snowflake.Client.Model
         MERGE = 0x3000 + 0x400,
         MULTI_INSERT = 0x3000 + 0x500,
         COPY = 0x3000 + 0x600,
+        COPY_UNLOAD = 0x3000 + 0x700,
 
         SCL = 0x4000,
         ALTER_SESSION = 0x4000 + 0x100,

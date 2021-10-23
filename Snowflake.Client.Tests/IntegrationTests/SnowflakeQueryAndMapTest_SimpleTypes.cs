@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 namespace Snowflake.Client.Tests.IntegrationTests
 {
     [TestFixture]
-    public class SnowflakeQueriesWithMappingTest
+    public class SnowflakeQueryAndMapTest_SimpleTypes
     {
         private readonly SnowflakeClient _snowflakeClient;
 
-        public SnowflakeQueriesWithMappingTest()
+        public SnowflakeQueryAndMapTest_SimpleTypes()
         {
             var configJson = File.ReadAllText("testconfig.json");
             var testParameters = JsonSerializer.Deserialize<TestConfiguration>(configJson, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
@@ -25,17 +25,42 @@ namespace Snowflake.Client.Tests.IntegrationTests
         [Test]
         public async Task QueryAndMap_SimpleTypes()
         {
-            await CreateAndPopulateTableWithSimpleDataTypes();
+            await CreateAndPopulateTable();
 
             var result = await _snowflakeClient.QueryAsync<SimpleDataTypes>("SELECT * FROM DEMO_DB.PUBLIC.DATATYPES_SIMPLE;");
             var records = result.ToList();
 
-            ValidateSimpleRecords(records);
+            ValidateRecords(records);
 
-            await RemoveSimpleDatatypesTable();
+            await RemoveTable();
         }
 
-        private void ValidateSimpleRecords(List<SimpleDataTypes> records)
+        private async Task CreateAndPopulateTable()
+        {
+            var query = "CREATE OR REPLACE TABLE DEMO_DB.PUBLIC.DATATYPES_SIMPLE " +
+                        "(ID INT, SomeInt INT, SomeFloat FLOAT, SomeVarchar VARCHAR, SomeBoolean BOOLEAN, SomeBinary BINARY);";
+
+            var result = await _snowflakeClient.ExecuteScalarAsync(query);
+
+            var insertQuery1 = "INSERT INTO DEMO_DB.PUBLIC.DATATYPES_SIMPLE (ID, SomeInt, SomeFloat, SomeVarchar, SomeBoolean, SomeBinary) " +
+                               "SELECT 1, 1, 2.5, 'some-text', true, to_binary(hex_encode('wow'));";
+
+            var insertQuery2 = "INSERT INTO DEMO_DB.PUBLIC.DATATYPES_SIMPLE (ID, SomeInt, SomeFloat, SomeVarchar, SomeBoolean, SomeBinary) " +
+                               "SELECT 2, 0, 777.0, '', false, null;";
+
+            var insertQuery3 = "INSERT INTO DEMO_DB.PUBLIC.DATATYPES_SIMPLE (ID, SomeInt, SomeFloat, SomeVarchar, SomeBoolean, SomeBinary) " +
+                               "SELECT 3, -1, -2.5, 'some-text\r\n with rn', null, to_binary(hex_encode('wow'), 'UTF-8');";
+
+            var insertQuery4 = "INSERT INTO DEMO_DB.PUBLIC.DATATYPES_SIMPLE (ID, SomeInt, SomeFloat, SomeVarchar, SomeBoolean, SomeBinary) " +
+                               "SELECT 4, null, null, null, null, null;";
+
+            var insertion1 = await _snowflakeClient.ExecuteAsync(insertQuery1);
+            var insertion2 = await _snowflakeClient.ExecuteAsync(insertQuery2);
+            var insertion3 = await _snowflakeClient.ExecuteAsync(insertQuery3);
+            var insertion4 = await _snowflakeClient.ExecuteAsync(insertQuery4);
+        }
+
+        private void ValidateRecords(List<SimpleDataTypes> records)
         {
             Assert.AreEqual(1, records[0].Id);
             Assert.AreEqual(1, records[0].SomeInt);
@@ -66,32 +91,7 @@ namespace Snowflake.Client.Tests.IntegrationTests
             Assert.AreEqual(null, records[3].SomeBinary);
         }
 
-        private async Task CreateAndPopulateTableWithSimpleDataTypes()
-        {
-            var query = "CREATE OR REPLACE TABLE DEMO_DB.PUBLIC.DATATYPES_SIMPLE " +
-                        "(ID INT, SomeInt INT, SomeFloat FLOAT, SomeVarchar VARCHAR, SomeBoolean BOOLEAN, SomeBinary BINARY);";
-
-            var result = await _snowflakeClient.ExecuteScalarAsync(query);
-
-            var insertQuery1 = "INSERT INTO DEMO_DB.PUBLIC.DATATYPES_SIMPLE (ID, SomeInt, SomeFloat, SomeVarchar, SomeBoolean, SomeBinary) " +
-                               "SELECT 1, 1, 2.5, 'some-text', true, to_binary(hex_encode('wow'));";
-
-            var insertQuery2 = "INSERT INTO DEMO_DB.PUBLIC.DATATYPES_SIMPLE (ID, SomeInt, SomeFloat, SomeVarchar, SomeBoolean, SomeBinary) " +
-                               "SELECT 2, 0, 777.0, '', false, null;";
-
-            var insertQuery3 = "INSERT INTO DEMO_DB.PUBLIC.DATATYPES_SIMPLE (ID, SomeInt, SomeFloat, SomeVarchar, SomeBoolean, SomeBinary) " +
-                               "SELECT 3, -1, -2.5, 'some-text\r\n with rn', null, to_binary(hex_encode('wow'), 'UTF-8');";
-
-            var insertQuery4 = "INSERT INTO DEMO_DB.PUBLIC.DATATYPES_SIMPLE (ID, SomeInt, SomeFloat, SomeVarchar, SomeBoolean, SomeBinary) " +
-                               "SELECT 4, null, null, null, null, null;";
-
-            var insertion1 = await _snowflakeClient.ExecuteAsync(insertQuery1);
-            var insertion2 = await _snowflakeClient.ExecuteAsync(insertQuery2);
-            var insertion3 = await _snowflakeClient.ExecuteAsync(insertQuery3);
-            var insertion4 = await _snowflakeClient.ExecuteAsync(insertQuery4);
-        }
-
-        private async Task<string> RemoveSimpleDatatypesTable()
+        private async Task<string> RemoveTable()
         {
             var query = "DROP TABLE IF EXISTS DEMO_DB.PUBLIC.DATATYPES_SIMPLE;";
             var result = await _snowflakeClient.ExecuteScalarAsync(query);

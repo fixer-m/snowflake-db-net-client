@@ -71,8 +71,16 @@ namespace Snowflake.Client.Tests.UnitTests
             response.RowType.Add(new ColumnDescription() { Name = "ByteArrayProperty", Type = "binary" });
 
             response.RowSet.Add(new List<string>() {
-                "Sometext", "true", "7", "27.6", "19.239834", "1600000000.000000000",
-                "1600000000.000000000", "e7412bbf-88ee-4149-b341-101e0f72ec7c", "0080ff" });
+                "Sometext",
+                "true",
+                "7",
+                "27.6",
+                "19.239834",
+                "1600000000.000000000",
+                "1600000000.000000000",
+                "e7412bbf-88ee-4149-b341-101e0f72ec7c",
+                "0080ff"
+            });
 
             return response;
         }

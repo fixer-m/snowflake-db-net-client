@@ -1,44 +1,28 @@
 ﻿using NUnit.Framework;
-using Snowflake.Client.Tests.IntegrationTests.Models;
-using System.IO;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Snowflake.Client.Tests.IntegrationTests
 {
     [TestFixture]
-    public class SnowflakeSessionTest
+    public class SnowflakeSessionTest : IntegrationTestBase
     {
-        private readonly SnowflakeConnectionInfo _conectionInfo;
-
-        public SnowflakeSessionTest()
-        {
-            var configJson = File.ReadAllText("testconfig.json");
-            var testParameters = JsonSerializer.Deserialize<TestConfiguration>(configJson, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
-            _conectionInfo = testParameters.Connection;
-        }
-
         [Test]
         public async Task InitNewSession()
         {
-            var snowflakeClient = new SnowflakeClient(_conectionInfo.User, _conectionInfo.Password, _conectionInfo.Account, _conectionInfo.Region);
-
-            var sessionInitialized = await snowflakeClient.InitNewSessionAsync();
+            var sessionInitialized = await _snowflakeClient.InitNewSessionAsync();
 
             Assert.IsTrue(sessionInitialized);
-            Assert.IsNotNull(snowflakeClient.SnowflakeSession);
+            Assert.IsNotNull(_snowflakeClient.SnowflakeSession);
         }
 
         [Test]
         public async Task RenewSession()
         {
-            var snowflakeClient = new SnowflakeClient(_conectionInfo.User, _conectionInfo.Password, _conectionInfo.Account, _conectionInfo.Region);
+            var sessionInitialized = await _snowflakeClient.InitNewSessionAsync();
+            var firstSessionToken = _snowflakeClient.SnowflakeSession.SessionToken;
 
-            var sessionInitialized = await snowflakeClient.InitNewSessionAsync();
-            var firstSessionToken = snowflakeClient.SnowflakeSession.SessionToken;
-
-            var sessionRenewed = await snowflakeClient.RenewSessionAsync();
-            var secondSessionToken = snowflakeClient.SnowflakeSession.SessionToken;
+            var sessionRenewed = await _snowflakeClient.RenewSessionAsync();
+            var secondSessionToken = _snowflakeClient.SnowflakeSession.SessionToken;
 
             Assert.IsTrue(sessionInitialized);
             Assert.IsTrue(sessionRenewed);
@@ -48,14 +32,12 @@ namespace Snowflake.Client.Tests.IntegrationTests
         [Test]
         public async Task CloseSession()
         {
-            var snowflakeClient = new SnowflakeClient(_conectionInfo.User, _conectionInfo.Password, _conectionInfo.Account, _conectionInfo.Region);
-
-            var sessionInitialized = await snowflakeClient.InitNewSessionAsync();
-            var sessionClosed = await snowflakeClient.CloseSessionAsync();
+            var sessionInitialized = await _snowflakeClient.InitNewSessionAsync();
+            var sessionClosed = await _snowflakeClient.CloseSessionAsync();
 
             Assert.IsTrue(sessionInitialized);
             Assert.IsTrue(sessionClosed);
-            Assert.IsNull(snowflakeClient.SnowflakeSession);
+            Assert.IsNull(_snowflakeClient.SnowflakeSession);
         }
     }
 }

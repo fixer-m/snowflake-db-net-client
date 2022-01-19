@@ -1,25 +1,11 @@
 ﻿using NUnit.Framework;
-using Snowflake.Client.Tests.IntegrationTests.Models;
-using System.IO;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Snowflake.Client.Tests.IntegrationTests
 {
     [TestFixture]
-    public class SnowflakeQueriesTest
+    public class SnowflakeQueriesTest : IntegrationTestBase
     {
-        private readonly SnowflakeClient _snowflakeClient;
-
-        public SnowflakeQueriesTest()
-        {
-            var configJson = File.ReadAllText("testconfig.json");
-            var testParameters = JsonSerializer.Deserialize<TestConfiguration>(configJson, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
-            var conectionInfo = testParameters.Connection;
-
-            _snowflakeClient = new SnowflakeClient(conectionInfo.User, conectionInfo.Password, conectionInfo.Account, conectionInfo.Region);
-        }
-
         [Test]
         public async Task ExecuteScalar_WithResult()
         {

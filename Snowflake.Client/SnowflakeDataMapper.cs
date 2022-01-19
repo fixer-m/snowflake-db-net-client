@@ -52,36 +52,40 @@ namespace Snowflake.Client
             if (value == null || value == "null")
                 return "null";
 
-            if (columnType == "text")
-                return JsonSerializer.Serialize(value);
-
-            var sfSemiStructuredTypes = new List<string>() { "object", "variant", "array" };
-            if (sfSemiStructuredTypes.Contains(columnType))
-                return value;
-
-            var sfSimpleTypes = new List<string>() { "fixed", "real" };
-            if (sfSimpleTypes.Contains(columnType))
-                return value;
-
-            if (columnType == "boolean")
-                return value == "1" || value.ToLower() == "true" ? "true" : "false";
-
-            var sfDateTimeOffsetTypes = new List<string>() { "timestamp_ltz", "timestamp_tz" };
-            if (sfDateTimeOffsetTypes.Contains(columnType))
-                return '"' + SnowflakeTypesConverter.ConvertToDateTimeOffset(value, columnType).ToString("o") + '"';
-
-            var sfDateTimeTypes = new List<string>() { "date", "time", "timestamp_ntz" };
-            if (sfDateTimeTypes.Contains(columnType))
-                return '"' + SnowflakeTypesConverter.ConvertToDateTime(value, columnType).ToString("o") + '"';
-
-            if (columnType == "binary")
+            switch (columnType)
             {
-                var bytes = SnowflakeTypesConverter.HexToBytes(value);
-                var base64 = Convert.ToBase64String(bytes);
-                return '"' + base64 + '"';
-            }
+                case "text":
+                    return JsonSerializer.Serialize(value);
 
-            return '"' + value + '"';
+                case "fixed":
+                case "real":
+                    return value;
+
+                case "boolean":
+                    return value == "1" || value.ToLower() == "true" ? "true" : "false";
+
+                case "date":
+                case "time":
+                case "timestamp_ntz":
+                    return '"' + SnowflakeTypesConverter.ConvertToDateTime(value, columnType).ToString("o") + '"';
+
+                case "timestamp_ltz":
+                case "timestamp_tz":
+                    return '"' + SnowflakeTypesConverter.ConvertToDateTimeOffset(value, columnType).ToString("o") + '"';
+
+                case "object":
+                case "variant":
+                case "array":
+                    return value;
+
+                case "binary":
+                    var bytes = SnowflakeTypesConverter.HexToBytes(value);
+                    var base64 = Convert.ToBase64String(bytes);
+                    return '"' + base64 + '"';
+
+                default:
+                    return '"' + value + '"';
+            }
         }
     }
 }

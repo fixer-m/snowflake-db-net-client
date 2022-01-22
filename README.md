@@ -44,17 +44,17 @@ Improvements in Snowflake.Client vs Snowflake.Data:
 - Performance: Re-uses Snowflake session, i.e. ~3x less roundtrips to SF
 - Performance: Doesn't have additional intermediate mapping from SF to DB types 
 - Better API: Clean and simple API vs verbose ADO.NET 
-- Less third party dependencies: 0 vs 4
+- Less third party dependencies: 0 vs 5
 
-Added features in Snowflake.Client vs Snowflake.Data:
+New features in Snowflake.Client:
 - Map response data to entities
 - Supports `describeOnly` flag
 - Has option to return raw data from Snowflake response (including QueryID and more)
 - Exposes Snowflake session info 
 - New SQL parameter binding API with a few options (inspired by Dapper)
 
-Missing features in Snowflake.Client vs Snowflake.Data:
-- Other Authentication schemes
+Missing features in Snowflake.Client:
+- Authentication schemes other than basic
 
 ### Mapping basics
 Use `QueryAsync<T>` method to get response data automatically mapped to your model (`T`): 

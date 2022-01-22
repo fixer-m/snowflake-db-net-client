@@ -169,10 +169,19 @@ namespace Snowflake.Client
         {
             var response = await QueryInternalAsync(sql, sqlParams, false, ct).ConfigureAwait(false);
 
-            if (response.Data.Chunks != null && response.Data.Chunks.Count > 0)
-                throw new SnowflakeException("Downloading data from chunks is not implemented yet.");
+            var rowset = response.Data.RowSet;
 
-            var result = SnowflakeDataMapper.MapTo<T>(response.Data.RowType, response.Data.RowSet);
+            if (response.Data.Chunks != null && response.Data.Chunks.Count > 0)
+            {
+                rowset = await ChunksDownloader.DownloadAndParseChunksAsync(new ChunksDownloadInfo()
+                {
+                    ChunkHeaders = response.Data.ChunkHeaders,
+                    Chunks = response.Data.Chunks,
+                    Qrmk = response.Data.Qrmk
+                });
+            }
+
+            var result = SnowflakeDataMapper.MapTo<T>(response.Data.RowType, rowset);
             return result;
         }
 

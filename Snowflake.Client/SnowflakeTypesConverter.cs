@@ -8,7 +8,7 @@ namespace Snowflake.Client
     /// </summary>
     internal static class SnowflakeTypesConverter
     {
-        private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Unspecified);
 
         internal static DateTime ConvertToDateTime(string value, string snowflakeType)
         {

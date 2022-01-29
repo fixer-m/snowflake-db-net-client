@@ -122,6 +122,14 @@ namespace Snowflake.Client
             return request;
         }
 
+        internal HttpRequestMessage BuildGetResultRequest(string getResultUrl)
+        {
+            var queryUri = BuildUri(getResultUrl);
+            var request = BuildJsonRequestMessage(queryUri, HttpMethod.Get);
+
+            return request;
+        }
+
         internal Uri BuildLoginUrl(SessionInfo sessionInfo)
         {
             var queryParams = new Dictionary<string, string>();

@@ -232,8 +232,37 @@ namespace Snowflake.Client
                 response = await _restClient.SendAsync<QueryExecResponse>(queryRequest, ct).ConfigureAwait(false);
             }
 
+            // If query execution takes more than 45 seconds we will get this
+            if (response.Code == 333334 || response.Code == 333333)
+            {
+                response = await RepeatUntilQueryCompleted(response.Data.GetResultUrl, ct);
+            }
+
             if (!response.Success)
                 throw new SnowflakeException($"Query execution failed. Message: {response.Message}", response.Code);
+
+            return response;
+        }
+
+        private async Task<QueryExecResponse> RepeatUntilQueryCompleted(string getResultUrl, CancellationToken ct = default)
+        {
+            var lastResultUrl = getResultUrl;
+            QueryExecResponse response;
+            do
+            {
+                var getResultRequest = _requestBuilder.BuildGetResultRequest(lastResultUrl);
+                response = await _restClient.SendAsync<QueryExecResponse>(getResultRequest, ct).ConfigureAwait(false);
+
+                if (response.Code == 390112)
+                {
+                    await RenewSessionAsync(ct).ConfigureAwait(false);
+                }
+                else
+                {
+                    lastResultUrl = response.Data?.GetResultUrl;
+                }
+
+            } while (response.Code == 333334 || response.Code == 333333 || response.Code == 390112);
 
             return response;
         }

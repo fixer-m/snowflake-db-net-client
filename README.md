@@ -1,4 +1,4 @@
-[![NuGet](https://img.shields.io/badge/nuget-v0.3.8-green.svg)](https://www.nuget.org/packages/Snowflake.Client/) 
+[![NuGet](https://img.shields.io/badge/nuget-v0.3.9-green.svg)](https://www.nuget.org/packages/Snowflake.Client/) 
 [![](https://img.shields.io/nuget/dt/Snowflake.Client.svg)](https://www.nuget.org/packages/Snowflake.Client/) 
 [![Targets](https://img.shields.io/badge/.NET%20Standard-2.0-green.svg)](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) 
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -7,6 +7,12 @@
 .NET client for [Snowflake](https://www.snowflake.com) REST API.  
 Provides API to execute SQL queries and map response to your models.  
 Read my [blog post](https://medium.com/@fixer_m/better-net-client-for-snowflake-db-ecb48c48c872) about the ideas behind it. 
+
+### Installation
+Add nuget package [Snowflake.Client](https://www.nuget.org/packages/Snowflake.Client) to your project:  
+```{r, engine='bash', code_block_name}
+PM> Install-Package Snowflake.Client
+```
 
 ### Main features
 - User/Password authentication
@@ -55,25 +61,25 @@ Snowflake supports two placeholder formats for [parameter binding](https://docs.
 - Positional — with a "?" placeholders 
 - Named — parameter name prefixed with a ":"
 
-Positional placeholders used with a value(s) of "simple" types, like `String` or `DateTime`. Named placeholders used to pass multiple values of different types. See examples below. 
+Snowflake.Client supports both. You can use positional placeholders to bind values of "simple" types (like `Int`, `String` or `DateTime`). To bind named parameters you can use classes, structs, anonymous types or dictionary. See examples below. 
 ```csharp
-// Single value, positional placeholder, any "simple" type
+// Positional placeholder, any "simple" type
 var result1 = await snowflakeClient.QueryAsync<Employee>
               ("SELECT * FROM EMPLOYEES WHERE TITLE = ?", "Programmer");
 
-// Multiple values, positional placeholders, any IEnumerable<T>
+// Positional placeholders, any IEnumerable<T>
 var result2 = await snowflakeClient.QueryAsync<Employee>
               ("SELECT * FROM EMPLOYEES WHERE ID IN (?, ?, ?)", new int[] { 1, 2, 3 });
 
-// Multiple values, named placeholders, any custom class or struct
+// Named placeholders, any custom class or struct
 var result3 = await snowflakeClient.QueryAsync<Employee>  
               ("SELECT * FROM EMPLOYEES WHERE TITLE = :Title", new Employee() { Title = "Programmer" });
 
-// Multiple values, named placeholders, any anonymous class
+// Named placeholders, any anonymous class
 var result4 = await snowflakeClient.QueryAsync<Employee>     
               ("SELECT * FROM EMPLOYEES WHERE TITLE = :Title", new { Title = "Junior" });
 
-// Multiple values, named placeholders, any IDictionary<T>
+// Named placeholders, any IDictionary<T>
 var result5 = await snowflakeClient.QueryAsync<Employee>
               ("SELECT * FROM EMPLOYEES WHERE TITLE = :Title", new Dictionary<string, string> {{ "Title", "Programmer" }});
 ```
@@ -113,18 +119,66 @@ var queryDataResponse = await snowflakeClient.QueryRawResponseAsync("SELECT * FR
 var employees = SnowflakeDataMapper.MapTo<Employee>(queryDataResponse.Columns, queryDataResponse.Rows);
 ```
 
-### Installation
-Add nuget package [Snowflake.Client](https://www.nuget.org/packages/Snowflake.Client) to your project:  
-```{r, engine='bash', code_block_name}
-PM> Install-Package Snowflake.Client
-```
+### Release notes
 
-### Road Map 
-- [Done] Async API 
-- [Done] Auto-renew session
-- [Done] Query cancellation
-- [Done] Unit tests
-- [Done] Integration tests
-- [Done] Chunks downloader (for big responses)
-- [InProgress] Long-running queries
-- ? Get/Put files to Stage
+#### 0.3.9
+- Now can handle [long-running queries](https://github.com/fixer-m/snowflake-db-net-client/issues/15) (> 45 seconds)
+
+#### 0.3.8
+- Implemented [downloading big data reponses](https://github.com/fixer-m/snowflake-db-net-client/issues/13) (> 1000 rows) from chunks (`ChunksDownloader`)
+- Now returns affected rows count for `COPY UNLOAD` command
+
+#### 0.3.7
+- Added cancellation token for public async methods
+- Improved mapping tests
+
+#### 0.3.6
+- Set `Expect100Continue` and `UseNagleAlgorithm` to false for better HTTP performance
+- Allow streaming for http responses with `ResponseHeadersRead` option
+- Improved bool mapping
+- Adding `IDictionary<>` support for binding parameters
+
+#### 0.3.5
+- Added response auto-decompression
+- Added cloud tag auto-detection to finally fix [SSL cert issue](https://github.com/fixer-m/snowflake-db-net-client/issues/7)
+- Fix: explicit URL host now actually have higher priority than auto-constructed
+- Now it automatically replaces underscore in account name 
+- [More info on this release](https://github.com/fixer-m/snowflake-db-net-client/issues/7#issuecomment-812715944)
+
+#### 0.3.4
+- Forced TLS 1.2 and revocation check as in official connector
+
+#### 0.3.3
+- Added `SetHttpClient()` as workaround for [SSL cert issue](https://github.com/fixer-m/snowflake-db-net-client/issues/7)
+
+#### 0.3.2
+- Added support for binding from class fields and structs
+- Added a lot of unit tests 
+- Started working on integration tests
+- Now uses it's own driver name _.NET_Snowflake.Client_
+
+#### 0.3.1
+- Implemented query cancellation with `CancelQueryAsync()`
+- Fixed [issue with mapping](https://github.com/fixer-m/snowflake-db-net-client/issues/4#issue-795843806) for semi-structured SF types (object, variant, array)
+- Implemented auto-renewing SF session, if its expired
+- Initializes SF session automatically with first query
+- `QueryRawAsync()` now returns response with all metadata
+- Extracted interfaces for public classes 
+
+#### 0.3.0
+- Changed all API methods to be async
+- Added a lot of documentation in readme file
+- Implemented first unit tests
+- Target frameworks changed to NET Standard 2.0 and .NET Core 3.1
+
+#### 0.2.4
+- Fix: now actually uses passed `JsonMapperOptions`
+- New `Execute()` method which returns affected rows count
+
+#### 0.2.3
+- Changed return type of `ExecuteScalar()` to string
+- Added comments and documentation for public methods
+
+#### 0.2.2
+- First public release
+- Implemented all basic features

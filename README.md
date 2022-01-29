@@ -61,7 +61,7 @@ Snowflake supports two placeholder formats for [parameter binding](https://docs.
 - Positional — with a "?" placeholders 
 - Named — parameter name prefixed with a ":"
 
-Snowflake.Client supports both. You can use positional placeholders to bind values of "simple" types (like `Int`, `String` or `DateTime`). To bind named parameters you can use classes, structs, anonymous types or dictionary. See examples below. 
+Both formats are supported. You can use positional placeholders to bind values of "simple" types (like `Int`, `String` or `DateTime`). To bind named parameters you can use classes, structs, anonymous types or dictionary. See examples below. 
 ```csharp
 // Positional placeholder, any "simple" type
 var result1 = await snowflakeClient.QueryAsync<Employee>

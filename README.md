@@ -121,44 +121,44 @@ var employees = SnowflakeDataMapper.MapTo<Employee>(queryDataResponse.Columns, q
 
 ### Release notes
 
-#### 0.3.9
+0.3.9
 - Now can handle [long-running queries](https://github.com/fixer-m/snowflake-db-net-client/issues/15) (> 45 seconds)
 - Now returns date-time values as `DateTimeKind.Unspecified`
-
-#### 0.3.8
+- 
+0.3.8
 - Implemented [downloading big data reponses](https://github.com/fixer-m/snowflake-db-net-client/issues/13) (> 1000 rows) from chunks (`ChunksDownloader`)
 - Now returns affected rows count for `COPY UNLOAD` command
 
-#### 0.3.7
+0.3.7
 - Added cancellation token for public async methods
 - Improved mapping tests
 
-#### 0.3.6
+0.3.6
 - Set `Expect100Continue` and `UseNagleAlgorithm` to false for better HTTP performance
 - Allow streaming for http responses with `ResponseHeadersRead` option
 - Improved bool mapping
 - Adding `IDictionary<>` support for binding parameters
 
-#### 0.3.5
+0.3.5
 - Added response auto-decompression
 - Added cloud tag auto-detection to finally fix [SSL cert issue](https://github.com/fixer-m/snowflake-db-net-client/issues/7)
 - Fix: explicit URL host now actually have higher priority than auto-constructed
 - Now it automatically replaces underscore in account name 
 - [More info on this release](https://github.com/fixer-m/snowflake-db-net-client/issues/7#issuecomment-812715944)
 
-#### 0.3.4
+0.3.4
 - Forced TLS 1.2 and revocation check as in official connector
 
-#### 0.3.3
+0.3.3
 - Added `SetHttpClient()` as workaround for [SSL cert issue](https://github.com/fixer-m/snowflake-db-net-client/issues/7)
 
-#### 0.3.2
+0.3.2
 - Added support for binding from class fields and structs
 - Added a lot of unit tests 
 - Started working on integration tests
 - Now uses it's own driver name _.NET_Snowflake.Client_
 
-#### 0.3.1
+0.3.1
 - Implemented query cancellation with `CancelQueryAsync()`
 - Fixed [issue with mapping](https://github.com/fixer-m/snowflake-db-net-client/issues/4#issue-795843806) for semi-structured SF types (object, variant, array)
 - Implemented auto-renewing SF session, if its expired
@@ -166,20 +166,20 @@ var employees = SnowflakeDataMapper.MapTo<Employee>(queryDataResponse.Columns, q
 - `QueryRawAsync()` now returns response with all metadata
 - Extracted interfaces for public classes 
 
-#### 0.3.0
+0.3.0
 - Changed all API methods to be async
 - Added a lot of documentation in readme file
 - Implemented first unit tests
 - Target frameworks changed to NET Standard 2.0 and .NET Core 3.1
 
-#### 0.2.4
+0.2.4
 - Fix: now actually uses passed `JsonMapperOptions`
 - New `Execute()` method which returns affected rows count
 
-#### 0.2.3
+0.2.3
 - Changed return type of `ExecuteScalar()` to string
 - Added comments and documentation for public methods
 
-#### 0.2.2
+0.2.2
 - First public release
 - Implemented all basic features

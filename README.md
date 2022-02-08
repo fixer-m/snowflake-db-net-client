@@ -124,7 +124,7 @@ var employees = SnowflakeDataMapper.MapTo<Employee>(queryDataResponse.Columns, q
 0.3.9
 - Now can handle [long-running queries](https://github.com/fixer-m/snowflake-db-net-client/issues/15) (> 45 seconds)
 - Now returns date-time values as `DateTimeKind.Unspecified`
-- 
+
 0.3.8
 - Implemented [downloading big data reponses](https://github.com/fixer-m/snowflake-db-net-client/issues/13) (> 1000 rows) from chunks (`ChunksDownloader`)
 - Now returns affected rows count for `COPY UNLOAD` command

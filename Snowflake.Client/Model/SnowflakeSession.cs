@@ -29,35 +29,35 @@ namespace Snowflake.Client
 
         public SnowflakeSession(LoginResponseData loginResponseData)
         {
-            this.SessionToken = loginResponseData.Token;
+            SessionToken = loginResponseData.Token;
 
-            this.MasterToken = loginResponseData.MasterToken;
-            this.ValidityInSeconds = loginResponseData.ValidityInSeconds;
-            this.MasterValidityInSeconds = loginResponseData.MasterValidityInSeconds;
-            this.DisplayUserName = loginResponseData.DisplayUserName;
-            this.ServerVersion = loginResponseData.ServerVersion;
-            this.FirstLogin = loginResponseData.FirstLogin;
-            this.RemMeToken = loginResponseData.RemMeToken;
-            this.RemMeValidityInSeconds = loginResponseData.RemMeValidityInSeconds;
-            this.HealthCheckInterval = loginResponseData.HealthCheckInterval;
-            this.NewClientForUpgrade = loginResponseData.NewClientForUpgrade;
-            this.SessionId = loginResponseData.SessionId;
-            this.IdToken = loginResponseData.IdToken;
-            this.IdTokenValidityInSeconds = loginResponseData.IdTokenValidityInSeconds;
-            this.DatabaseName = loginResponseData.SessionInfo.DatabaseName;
-            this.SchemaName = loginResponseData.SessionInfo.SchemaName;
-            this.WarehouseName = loginResponseData.SessionInfo.WarehouseName;
-            this.RoleName = loginResponseData.SessionInfo.RoleName;
+            MasterToken = loginResponseData.MasterToken;
+            ValidityInSeconds = loginResponseData.ValidityInSeconds;
+            MasterValidityInSeconds = loginResponseData.MasterValidityInSeconds;
+            DisplayUserName = loginResponseData.DisplayUserName;
+            ServerVersion = loginResponseData.ServerVersion;
+            FirstLogin = loginResponseData.FirstLogin;
+            RemMeToken = loginResponseData.RemMeToken;
+            RemMeValidityInSeconds = loginResponseData.RemMeValidityInSeconds;
+            HealthCheckInterval = loginResponseData.HealthCheckInterval;
+            NewClientForUpgrade = loginResponseData.NewClientForUpgrade;
+            SessionId = loginResponseData.SessionId;
+            IdToken = loginResponseData.IdToken;
+            IdTokenValidityInSeconds = loginResponseData.IdTokenValidityInSeconds;
+            DatabaseName = loginResponseData.SessionInfo.DatabaseName;
+            SchemaName = loginResponseData.SessionInfo.SchemaName;
+            WarehouseName = loginResponseData.SessionInfo.WarehouseName;
+            RoleName = loginResponseData.SessionInfo.RoleName;
         }
 
         internal void Renew(RenewSessionResponseData renewSessionResponseData)
         {
-            this.SessionToken = renewSessionResponseData.SessionToken;
+            SessionToken = renewSessionResponseData.SessionToken;
 
-            this.MasterToken = renewSessionResponseData.MasterToken;
-            this.SessionId = renewSessionResponseData.SessionId;
-            this.ValidityInSeconds = renewSessionResponseData.ValidityInSecondsST;
-            this.MasterValidityInSeconds = renewSessionResponseData.ValidityInSecondsMT;
+            MasterToken = renewSessionResponseData.MasterToken;
+            SessionId = renewSessionResponseData.SessionId;
+            ValidityInSeconds = renewSessionResponseData.ValidityInSecondsST;
+            MasterValidityInSeconds = renewSessionResponseData.ValidityInSecondsMT;
         }
 
         public override string ToString()

@@ -13,12 +13,12 @@ namespace Snowflake.Client.Helpers
     {
         public override int? Read(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options)
         {
-            if (reader.TokenType == JsonTokenType.String)
-            {
-                ReadOnlySpan<byte> span = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
-                if (Utf8Parser.TryParse(span, out int number, out int bytesConsumed) && span.Length == bytesConsumed)
-                    return number;
-            }
+            if (reader.TokenType != JsonTokenType.String)
+                return reader.GetInt32();
+            
+            ReadOnlySpan<byte> span = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+            if (Utf8Parser.TryParse(span, out int number, out int bytesConsumed) && span.Length == bytesConsumed)
+                return number;
 
             return reader.GetInt32();
         }

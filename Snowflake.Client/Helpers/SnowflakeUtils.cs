@@ -25,7 +25,7 @@ namespace Snowflake.Client.Helpers
                 case SnowflakeStatementType.DELETE:
                 case SnowflakeStatementType.MERGE:
                 case SnowflakeStatementType.MULTI_INSERT:
-                    updateCount = response.Data.RowSet[0].Sum(cell => long.Parse(cell));
+                    updateCount = response.Data.RowSet[0].Sum(long.Parse);
                     break;
 
                 case SnowflakeStatementType.COPY:
@@ -38,10 +38,10 @@ namespace Snowflake.Client.Helpers
                     break;
 
                 case SnowflakeStatementType.COPY_UNLOAD:
-                    var rowsUnoadedColumn = response.Data.RowType.FirstOrDefault(c => c.Name == "rows_unloaded");
-                    if (rowsUnoadedColumn != null)
+                    var rowsUnloadedColumn = response.Data.RowType.FirstOrDefault(c => c.Name == "rows_unloaded");
+                    if (rowsUnloadedColumn != null)
                     {
-                        var rowsUnloadedColumnIndex = response.Data.RowType.IndexOf(rowsUnoadedColumn);
+                        var rowsUnloadedColumnIndex = response.Data.RowType.IndexOf(rowsUnloadedColumn);
                         updateCount = long.Parse(response.Data.RowSet[0][rowsUnloadedColumnIndex]);
                     }
                     break;
@@ -68,32 +68,32 @@ namespace Snowflake.Client.Helpers
             if (region.Contains("."))
                 return "";
 
-            var regionTags = new Dictionary<string, string>();
-
-            regionTags.Add("us-west-2", ""); // "default" 
-
-            regionTags.Add("us-east-2", "aws");
-            regionTags.Add("us-east-1", "");
-            regionTags.Add("us-east-1-gov", "aws");
-            regionTags.Add("ca-central-1", "aws");
-            regionTags.Add("eu-west-1", "");
-            regionTags.Add("eu-west-2", "aws");
-            regionTags.Add("eu-central-1", "");
-            regionTags.Add("ap-northeast-1", "aws");
-            regionTags.Add("ap-south-1", "aws");
-            regionTags.Add("ap-southeast-1", "");
-            regionTags.Add("ap-southeast-2", "");
-            regionTags.Add("us-central1", "gcp");
-            regionTags.Add("europe-west2", "gcp");
-            regionTags.Add("europe-west4", "gcp");
-            regionTags.Add("west-us-2", "azure");
-            regionTags.Add("east-us-2", "azure");
-            regionTags.Add("us-gov-virginia", "azure");
-            regionTags.Add("canada-central", "azure");
-            regionTags.Add("west-europe", "azure");
-            regionTags.Add("switzerland-north", "azure");
-            regionTags.Add("southeast-asia", "azure");
-            regionTags.Add("australia-east", "azure");
+            var regionTags = new Dictionary<string, string>
+            {
+                {"us-west-2", ""}, // "default" 
+                {"us-east-2", "aws"},
+                {"us-east-1", ""},
+                {"us-east-1-gov", "aws"},
+                {"ca-central-1", "aws"},
+                {"eu-west-1", ""},
+                {"eu-west-2", "aws"},
+                {"eu-central-1", ""},
+                {"ap-northeast-1", "aws"},
+                {"ap-south-1", "aws"},
+                {"ap-southeast-1", ""},
+                {"ap-southeast-2", ""},
+                {"us-central1", "gcp"},
+                {"europe-west2", "gcp"},
+                {"europe-west4", "gcp"},
+                {"west-us-2", "azure"},
+                {"east-us-2", "azure"},
+                {"us-gov-virginia", "azure"},
+                {"canada-central", "azure"},
+                {"west-europe", "azure"},
+                {"switzerland-north", "azure"},
+                {"southeast-asia", "azure"},
+                {"australia-east", "azure"}
+            };
 
             regionTags.TryGetValue(region, out string cloudTag);
             return cloudTag ?? "";

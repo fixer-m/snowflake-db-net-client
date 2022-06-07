@@ -63,7 +63,9 @@ namespace Snowflake.Client
             }
 
             var elementType = GetItemTypeFromCollection(paramType);
-            if (IsSimpleType(elementType))
+            if (!IsSimpleType(elementType))
+                throw new ArgumentException(
+                    $"Parameter binding doesn't support type {elementType.Name} in collections.");
             {
                 int i = 0;
                 foreach (var item in enumerable)
@@ -75,7 +77,6 @@ namespace Snowflake.Client
                 return result;
             }
 
-            throw new ArgumentException($"Parameter binding doesn't support type {elementType.Name} in collections.");
         }
 
         private static Type GetItemTypeFromCollection(Type type)
@@ -83,7 +84,7 @@ namespace Snowflake.Client
             var elementType = type.GetGenericArguments().FirstOrDefault()
                                 ?? type.GetElementType()
                                 ?? type.GetInterfaces().FirstOrDefault(t => t.IsGenericType
-                                    && t.GetGenericTypeDefinition() == typeof(IEnumerable<>)).GenericTypeArguments.FirstOrDefault();
+                                    && t.GetGenericTypeDefinition() == typeof(IEnumerable<>))?.GenericTypeArguments.FirstOrDefault();
 
             return elementType;
         }

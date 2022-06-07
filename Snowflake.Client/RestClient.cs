@@ -13,18 +13,23 @@ namespace Snowflake.Client
         private HttpClient _httpClient;
         private readonly JsonSerializerOptions _jsonSerializerOptions;
 
-        internal RestClient()
+        internal RestClient(bool sslBypass = false)
         {
-            var httpClientHandler = new HttpClientHandler
-            {
-                SslProtocols = SslProtocols.Tls12,
-                CheckCertificateRevocationList = true,
-                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
-            };
+            _httpClient = !sslBypass
+                ? new HttpClient(new HttpClientHandler
+                {
+                    SslProtocols = SslProtocols.Tls12,
+                    CheckCertificateRevocationList = true,
+                    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+                })
+                : new HttpClient(new HttpClientHandler
+                {
+                    SslProtocols = SslProtocols.Tls12,
+                    CheckCertificateRevocationList = true,
+                    ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+                });
 
-            _httpClient = new HttpClient(httpClientHandler);
-
-            _jsonSerializerOptions = new JsonSerializerOptions()
+            _jsonSerializerOptions = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             };

@@ -39,14 +39,14 @@ namespace Snowflake.Client
                     int offset = int.Parse(value.Substring(spaceIndex + 1, value.Length - spaceIndex - 1));
                     TimeSpan offSetTimespan = new TimeSpan((offset - 1440) / 60, 0, 0);
 
-                    var secAndNsecTZPair = ExtractTimestamp(value.Substring(0, spaceIndex));
-                    long ticksTZ = (secAndNsecTZPair.Item1 * 1000 * 1000 * 1000 + secAndNsecTZPair.Item2) / 100;
-                    return new DateTimeOffset(UnixEpoch.Ticks + ticksTZ, TimeSpan.Zero).ToOffset(offSetTimespan);
+                    var secAndNsecTzPair = ExtractTimestamp(value.Substring(0, spaceIndex));
+                    long ticksTz = (secAndNsecTzPair.Item1 * 1000 * 1000 * 1000 + secAndNsecTzPair.Item2) / 100;
+                    return new DateTimeOffset(UnixEpoch.Ticks + ticksTz, TimeSpan.Zero).ToOffset(offSetTimespan);
 
                 case "timestamp_ltz":
-                    var secAndNsecLTZPair = ExtractTimestamp(value);
-                    long ticksLTZ = (secAndNsecLTZPair.Item1 * 1000 * 1000 * 1000 + secAndNsecLTZPair.Item2) / 100;
-                    return new DateTimeOffset(UnixEpoch.Ticks + ticksLTZ, TimeSpan.Zero).ToLocalTime();
+                    var secAndNsecLtzPair = ExtractTimestamp(value);
+                    long ticksLtz = (secAndNsecLtzPair.Item1 * 1000 * 1000 * 1000 + secAndNsecLtzPair.Item2) / 100;
+                    return new DateTimeOffset(UnixEpoch.Ticks + ticksLtz, TimeSpan.Zero).ToLocalTime();
 
                 default:
                     throw new SnowflakeException($"Conversion from {snowflakeType} to DateTimeOffset is not supported.");
@@ -81,10 +81,10 @@ namespace Snowflake.Client
 
         internal static byte[] HexToBytes(string hex)
         {
-            int NumberChars = hex.Length;
-            byte[] bytes = new byte[NumberChars / 2];
+            int numberChars = hex.Length;
+            byte[] bytes = new byte[numberChars / 2];
 
-            for (int i = 0; i < NumberChars; i += 2)
+            for (int i = 0; i < numberChars; i += 2)
                 bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
 
             return bytes;

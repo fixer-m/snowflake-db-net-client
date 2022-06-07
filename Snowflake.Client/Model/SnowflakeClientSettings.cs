@@ -1,5 +1,6 @@
 ﻿using Snowflake.Client.Helpers;
 using System;
+using System.Net.Http;
 using System.Text.Json;
 
 namespace Snowflake.Client.Model
@@ -25,7 +26,7 @@ namespace Snowflake.Client.Model
         public SessionInfo SessionInfo { get; private set; }
 
         /// <summary>
-        /// Serializeer options used to map data response to your model
+        /// Serializer options used to map data response to your model
         /// </summary>
         public JsonSerializerOptions JsonMapperOptions { get; private set; }
 
@@ -36,10 +37,9 @@ namespace Snowflake.Client.Model
             UrlInfo = urlInfo ?? new UrlInfo();
             JsonMapperOptions = jsonMapperOptions ?? new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
 
-            if (string.IsNullOrEmpty(UrlInfo.Host))
-                UrlInfo.Host = BuildHostName(AuthInfo.Account, AuthInfo.Region);
-            else
-                UrlInfo.Host = ReplaceUnderscores(UrlInfo.Host);
+            UrlInfo.Host = string.IsNullOrEmpty(UrlInfo.Host)
+                ? BuildHostName(AuthInfo.Account, AuthInfo.Region)
+                : ReplaceUnderscores(UrlInfo.Host);
         }
 
         private string BuildHostName(string account, string region)

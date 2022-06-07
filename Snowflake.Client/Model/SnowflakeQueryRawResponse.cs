@@ -29,27 +29,27 @@ namespace Snowflake.Client.Model
 
         public SnowflakeQueryRawResponse(QueryExecResponseData responseData)
         {
-            this.Parameters = responseData.Parameters;
-            this.Columns = responseData.RowType;
-            this.Rows = responseData.RowSet;
-            this.Total = responseData.Total;
-            this.Returned = responseData.Returned;
-            this.QueryId = responseData.QueryId;
-            this.SqlState = responseData.SqlState;
-            this.DatabaseProvider = responseData.DatabaseProvider;
-            this.FinalDatabaseName = responseData.FinalDatabaseName;
-            this.FinalRoleName = responseData.FinalRoleName;
-            this.FinalSchemaName = responseData.FinalSchemaName;
-            this.FinalWarehouseName = responseData.FinalWarehouseName;
-            this.NumberOfBinds = responseData.NumberOfBinds;
-            this.StatementTypeId = responseData.StatementTypeId;
-            this.Version = responseData.Version;
-            this.Chunks = responseData.Chunks;
-            this.Qrmk = responseData.Qrmk;
-            this.ChunkHeaders = responseData.ChunkHeaders;
-            this.GetResultUrl = responseData.GetResultUrl;
-            this.ProgressDesc = responseData.ProgressDesc;
-            this.QueryAbortAfterSecs = responseData.QueryAbortAfterSecs;
+            Parameters = responseData.Parameters;
+            Columns = responseData.RowType;
+            Rows = responseData.RowSet;
+            Total = responseData.Total;
+            Returned = responseData.Returned;
+            QueryId = responseData.QueryId;
+            SqlState = responseData.SqlState;
+            DatabaseProvider = responseData.DatabaseProvider;
+            FinalDatabaseName = responseData.FinalDatabaseName;
+            FinalRoleName = responseData.FinalRoleName;
+            FinalSchemaName = responseData.FinalSchemaName;
+            FinalWarehouseName = responseData.FinalWarehouseName;
+            NumberOfBinds = responseData.NumberOfBinds;
+            StatementTypeId = responseData.StatementTypeId;
+            Version = responseData.Version;
+            Chunks = responseData.Chunks;
+            Qrmk = responseData.Qrmk;
+            ChunkHeaders = responseData.ChunkHeaders;
+            GetResultUrl = responseData.GetResultUrl;
+            ProgressDesc = responseData.ProgressDesc;
+            QueryAbortAfterSecs = responseData.QueryAbortAfterSecs;
         }
     }
 }

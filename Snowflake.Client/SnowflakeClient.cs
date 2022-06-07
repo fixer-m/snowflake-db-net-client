@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Authentication;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,8 +43,9 @@ namespace Snowflake.Client
         /// <param name="sessionInfo">Session information: role, schema, database, warehouse</param>
         /// <param name="urlInfo">URL information: host, protocol and port</param>
         /// <param name="jsonMapperOptions">JsonSerializerOptions which will be used to map response to your model</param>
-        public SnowflakeClient(AuthInfo authInfo, SessionInfo sessionInfo = null, UrlInfo urlInfo = null, JsonSerializerOptions jsonMapperOptions = null)
-            : this(new SnowflakeClientSettings(authInfo, sessionInfo, urlInfo, jsonMapperOptions))
+        /// <param name="sslBypass">Toggles the SSL cert check bypass</param>
+        public SnowflakeClient(AuthInfo authInfo, SessionInfo sessionInfo = null, UrlInfo urlInfo = null, JsonSerializerOptions jsonMapperOptions = null, bool sslBypass = false)
+            : this(new SnowflakeClientSettings(authInfo, sessionInfo, urlInfo, jsonMapperOptions), sslBypass)
         {
         }
 
@@ -51,12 +53,13 @@ namespace Snowflake.Client
         /// Creates new Snowflake client. 
         /// </summary>
         /// <param name="settings">Client settings to initialize new session.</param>
-        public SnowflakeClient(SnowflakeClientSettings settings)
+        /// <param name="sslBypass">Toggles the SSL cert check bypass</param>
+        public SnowflakeClient(SnowflakeClientSettings settings, bool sslBypass = false)
         {
             ValidateClientSettings(settings);
 
             _clientSettings = settings;
-            _restClient = new RestClient();
+            _restClient = new RestClient(sslBypass);
             _requestBuilder = new RequestBuilder(settings.UrlInfo);
             SnowflakeDataMapper.SetJsonMapperOptions(settings.JsonMapperOptions);
         }
@@ -88,7 +91,7 @@ namespace Snowflake.Client
         /// <summary>
         /// Initializes new Snowflake session.
         /// </summary>
-        /// <returns>True if session succesfully initialized</returns>
+        /// <returns>True if session successfully initialized</returns>
         public async Task<bool> InitNewSessionAsync(CancellationToken ct = default)
         {
             _session = await AuthenticateAsync(_clientSettings.AuthInfo, _clientSettings.SessionInfo, ct).ConfigureAwait(false);
@@ -104,7 +107,7 @@ namespace Snowflake.Client
             var response = await _restClient.SendAsync<LoginResponse>(loginRequest, ct).ConfigureAwait(false);
 
             if (!response.Success)
-                throw new SnowflakeException($"Athentication failed. Message: {response.Message}", response.Code);
+                throw new SnowflakeException($"Authentication failed. Message: {response.Message}", response.Code);
 
             return new SnowflakeSession(response.Data);
         }
@@ -112,11 +115,11 @@ namespace Snowflake.Client
         /// <summary>
         /// Renew session
         /// </summary>
-        /// <returns>True if session succesfully renewed</returns>
+        /// <returns>True if session successfully renewed</returns>
         public async Task<bool> RenewSessionAsync(CancellationToken ct = default)
         {
             if (_session == null)
-                throw new SnowflakeException("Session is not itialized yet.");
+                throw new SnowflakeException("Session is not initialized yet.");
 
             var renewSessionRequest = _requestBuilder.BuildRenewSessionRequest();
             var response = await _restClient.SendAsync<RenewSessionResponse>(renewSessionRequest, ct).ConfigureAwait(false);
@@ -136,6 +139,7 @@ namespace Snowflake.Client
         /// <param name="sql">The SQL to execute.</param>
         /// <param name="sqlParams">The parameters to use for this command.</param>
         /// <returns>The first cell value returned as string.</returns>
+        /// <param name="ct">The cancellation token</param>
         public async Task<string> ExecuteScalarAsync(string sql, object sqlParams = null, CancellationToken ct = default)
         {
             var response = await QueryInternalAsync(sql, sqlParams, false, ct).ConfigureAwait(false);
@@ -149,6 +153,7 @@ namespace Snowflake.Client
         /// </summary>
         /// <param name="sql">The SQL to execute for this query.</param>
         /// <param name="sqlParams">The parameters to use for this query.</param>
+        /// <param name="ct">The cancellation token</param>
         /// <returns>The number of rows affected.</returns>
         public async Task<long> ExecuteAsync(string sql, object sqlParams = null, CancellationToken ct = default)
         {
@@ -164,24 +169,25 @@ namespace Snowflake.Client
         /// <typeparam name="T">The type of results to return.</typeparam>
         /// <param name="sql">The SQL to execute.</param>
         /// <param name="sqlParams">The parameters to use for this command.</param>
+        /// <param name="ct">The cancellation token</param>
         /// <returns>A sequence of data of the supplied type: one instance per row.</returns>
         public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object sqlParams = null, CancellationToken ct = default)
         {
             var response = await QueryInternalAsync(sql, sqlParams, false, ct).ConfigureAwait(false);
 
-            var rowset = response.Data.RowSet;
+            var rowSet = response.Data.RowSet;
 
             if (response.Data.Chunks != null && response.Data.Chunks.Count > 0)
             {
-                rowset = await ChunksDownloader.DownloadAndParseChunksAsync(new ChunksDownloadInfo()
+                rowSet = await ChunksDownloader.DownloadAndParseChunksAsync(new ChunksDownloadInfo
                 {
                     ChunkHeaders = response.Data.ChunkHeaders,
                     Chunks = response.Data.Chunks,
                     Qrmk = response.Data.Qrmk
-                });
+                }, ct);
             }
 
-            var result = SnowflakeDataMapper.MapTo<T>(response.Data.RowType, rowset);
+            var result = SnowflakeDataMapper.MapTo<T>(response.Data.RowType, rowSet);
             return result;
         }
 
@@ -191,6 +197,7 @@ namespace Snowflake.Client
         /// <param name="sql">The SQL to execute.</param>
         /// <param name="sqlParams">The parameters to use for this command.</param>
         /// <param name="describeOnly">Return only columns information.</param>
+        /// <param name="ct">The cancellation token</param>
         /// <returns>Rows and columns.</returns>
         public async Task<SnowflakeQueryRawResponse> QueryRawResponseAsync(string sql, object sqlParams = null, bool describeOnly = false, CancellationToken ct = default)
         {
@@ -203,6 +210,7 @@ namespace Snowflake.Client
         /// Cancels running query
         /// </summary>
         /// <param name="requestId">Request ID to cancel.</param>
+        /// <param name="ct">The cancellation token</param>
         public async Task<bool> CancelQueryAsync(string requestId, CancellationToken ct = default)
         {
             var cancelQueryRequest = _requestBuilder.BuildCancelQueryRequest(requestId);
@@ -219,7 +227,7 @@ namespace Snowflake.Client
         {
             if (_session == null)
             {
-                await InitNewSessionAsync().ConfigureAwait(false);
+                await InitNewSessionAsync(ct).ConfigureAwait(false);
             }
 
             var queryRequest = _requestBuilder.BuildQueryRequest(sql, sqlParams, describeOnly);

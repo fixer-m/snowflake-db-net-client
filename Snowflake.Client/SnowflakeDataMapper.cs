@@ -7,12 +7,12 @@ namespace Snowflake.Client
 {
     public static class SnowflakeDataMapper
     {
-        private static JsonSerializerOptions JsonMapperOptions = new JsonSerializerOptions();
+        private static JsonSerializerOptions _jsonMapperOptions = new JsonSerializerOptions();
 
         public static void SetJsonMapperOptions(JsonSerializerOptions jsonMapperOptions)
         {
             if (jsonMapperOptions != null)
-                JsonMapperOptions = jsonMapperOptions;
+                _jsonMapperOptions = jsonMapperOptions;
         }
 
         public static IEnumerable<T> MapTo<T>(List<ColumnDescription> columns, List<List<string>> rows)
@@ -26,7 +26,7 @@ namespace Snowflake.Client
             foreach (var rowRecord in rows)
             {
                 var jsonString = BuildJsonString(columns, rowRecord);
-                yield return JsonSerializer.Deserialize<T>(jsonString, JsonMapperOptions);
+                yield return JsonSerializer.Deserialize<T>(jsonString, _jsonMapperOptions);
             }
         }
 

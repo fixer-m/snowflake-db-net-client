@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -13,11 +14,11 @@ namespace Snowflake.Client
 {
     public static class ChunksDownloader
     {
-        private const string SSE_C_ALGORITHM = "x-amz-server-side-encryption-customer-algorithm";
-        private const string SSE_C_KEY = "x-amz-server-side-encryption-customer-key";
-        private const string SSE_C_AES = "AES256";
+        private const string SF_SSE_C_ALGORITHM = "x-amz-server-side-encryption-customer-algorithm";
+        private const string SF_SSE_C_KEY = "x-amz-server-side-encryption-customer-key";
+        private const string SF_SSE_C_AES = "AES256";
 
-        private static readonly HttpClient _httpClient;
+        private static readonly HttpClient HttpClient;
 
         static ChunksDownloader()
         {
@@ -26,7 +27,7 @@ namespace Snowflake.Client
                 AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
             };
 
-            _httpClient = new HttpClient(httpClientHandler)
+            HttpClient = new HttpClient(httpClientHandler)
             {
                 Timeout = TimeSpan.FromHours(1)
             };
@@ -34,17 +35,16 @@ namespace Snowflake.Client
 
         public static async Task<List<List<string>>> DownloadAndParseChunksAsync(ChunksDownloadInfo chunksDownloadInfo, CancellationToken ct = default)
         {
-            var rowset = new List<List<string>>();
+            var rowSet = new List<List<string>>();
 
-            foreach (var chunk in chunksDownloadInfo.Chunks)
+            foreach (var downloadRequest in chunksDownloadInfo.Chunks.Select(chunk => BuildChunkDownloadRequest(chunk, chunksDownloadInfo.ChunkHeaders, chunksDownloadInfo.Qrmk)))
             {
-                var downloadRequest = BuildChunkDownloadRequest(chunk, chunksDownloadInfo.ChunkHeaders, chunksDownloadInfo.Qrmk);
                 var chunkRowSet = await GetChunkContentAsync(downloadRequest, ct);
 
-                rowset.AddRange(chunkRowSet);
+                rowSet.AddRange(chunkRowSet);
             }
 
-            return rowset;
+            return rowSet;
         }
 
         private static HttpRequestMessage BuildChunkDownloadRequest(ExecResponseChunk chunk, Dictionary<string, string> chunkHeaders, string qrmk)
@@ -64,8 +64,8 @@ namespace Snowflake.Client
             }
             else
             {
-                request.Headers.Add(SSE_C_ALGORITHM, SSE_C_AES);
-                request.Headers.Add(SSE_C_KEY, qrmk);
+                request.Headers.Add(SF_SSE_C_ALGORITHM, SF_SSE_C_AES);
+                request.Headers.Add(SF_SSE_C_KEY, qrmk);
             }
 
             return request;
@@ -73,7 +73,7 @@ namespace Snowflake.Client
 
         private static async ValueTask<List<List<string>>> GetChunkContentAsync(HttpRequestMessage request, CancellationToken ct = default)
         {
-            using (var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false))
+            using (var response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false))
             {
                 response.EnsureSuccessStatusCode();
 
@@ -90,14 +90,14 @@ namespace Snowflake.Client
         ///     ["val1", "val2", null, ...],
         ///     ["val3", "val4", null, ...],
         ///     ...
-        /// To parse it as a json (array of strings), we need to preappend '[' and append ']' to the stream 
+        /// To parse it as a json (array of strings), we need to pre-append '[' and append ']' to the stream 
         /// </summary>
         private static Stream BuildDeserializableStream(Stream content)
         {
             Stream openBracket = new MemoryStream(Encoding.UTF8.GetBytes("["));
             Stream closeBracket = new MemoryStream(Encoding.UTF8.GetBytes("]"));
 
-            return new ConcatenatedStream(new Stream[3] { openBracket, content, closeBracket });
+            return new ConcatenatedStream(new[] { openBracket, content, closeBracket });
         }
     }
 }

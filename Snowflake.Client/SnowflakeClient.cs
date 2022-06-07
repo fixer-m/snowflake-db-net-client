@@ -31,8 +31,9 @@ namespace Snowflake.Client
         /// <param name="password">Password</param>
         /// <param name="account">Account</param>
         /// <param name="region">Region: "us-east-1", etc. Required for all except for US West Oregon (us-west-2).</param>
-        public SnowflakeClient(string user, string password, string account, string region = null)
-            : this(new AuthInfo(user, password, account, region))
+        /// <param name="sslBypass">Toggles the SSL cert check bypass</param>
+        public SnowflakeClient(string user, string password, string account, string region = null, bool sslBypass = false)
+            : this(new AuthInfo(user, password, account, region), sslBypass: sslBypass)
         {
         }
 

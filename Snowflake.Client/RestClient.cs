@@ -26,6 +26,7 @@ namespace Snowflake.Client
                 {
                     SslProtocols = SslProtocols.Tls12,
                     CheckCertificateRevocationList = false,
+                    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
                     ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
                 });
 

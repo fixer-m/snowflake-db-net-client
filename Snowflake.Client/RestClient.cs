@@ -25,7 +25,7 @@ namespace Snowflake.Client
                 : new HttpClient(new HttpClientHandler
                 {
                     SslProtocols = SslProtocols.Tls12,
-                    CheckCertificateRevocationList = true,
+                    CheckCertificateRevocationList = false,
                     ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
                 });
 

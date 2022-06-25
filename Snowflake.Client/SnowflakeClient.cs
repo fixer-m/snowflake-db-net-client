@@ -177,7 +177,7 @@ namespace Snowflake.Client
                     ChunkHeaders = response.Data.ChunkHeaders,
                     Chunks = response.Data.Chunks,
                     Qrmk = response.Data.Qrmk
-                });
+                }, ct);
             }
 
             var result = SnowflakeDataMapper.MapTo<T>(response.Data.RowType, rowSet);
@@ -218,7 +218,7 @@ namespace Snowflake.Client
         {
             if (SnowflakeSession == null)
             {
-                await InitNewSessionAsync().ConfigureAwait(false);
+                await InitNewSessionAsync(ct).ConfigureAwait(false);
             }
 
             var queryRequest = _requestBuilder.BuildQueryRequest(sql, sqlParams, describeOnly);

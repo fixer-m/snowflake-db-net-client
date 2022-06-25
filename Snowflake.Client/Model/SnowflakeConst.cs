@@ -1,4 +1,4 @@
-namespace Snowflake.Client
+namespace Snowflake.Client.Model
 {
     public static class SnowflakeConst
     {

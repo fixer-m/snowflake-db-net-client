@@ -9,7 +9,7 @@ namespace Snowflake.Client.Tests.IntegrationTests
         [Test]
         public async Task ExecuteScalar_WithResult()
         {
-            string result = await _snowflakeClient.ExecuteScalarAsync("SELECT CURRENT_USER();");
+            var result = await _snowflakeClient.ExecuteScalarAsync("SELECT CURRENT_USER();");
 
             Assert.IsTrue(!string.IsNullOrWhiteSpace(result));
         }
@@ -17,7 +17,7 @@ namespace Snowflake.Client.Tests.IntegrationTests
         [Test]
         public async Task ExecuteScalar_Null()
         {
-            string result = await _snowflakeClient.ExecuteScalarAsync("SELECT 1 WHERE 2 > 3;");
+            var result = await _snowflakeClient.ExecuteScalarAsync("SELECT 1 WHERE 2 > 3;");
 
             Assert.IsNull(result);
         }
@@ -27,7 +27,7 @@ namespace Snowflake.Client.Tests.IntegrationTests
         {
             // todo: do temporary insert to get affected rows > 0
 
-            long result = await _snowflakeClient.ExecuteAsync("SELECT 1;");
+            var result = await _snowflakeClient.ExecuteAsync("SELECT 1;");
 
             Assert.IsTrue(result == -1);
         }

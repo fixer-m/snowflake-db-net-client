@@ -1,7 +1,7 @@
-﻿using Snowflake.Client.Json;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Snowflake.Client.Json;
 
-namespace Snowflake.Client
+namespace Snowflake.Client.Model
 {
     public class ChunksDownloadInfo
     {

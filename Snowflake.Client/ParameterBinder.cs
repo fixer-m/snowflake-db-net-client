@@ -65,7 +65,7 @@ namespace Snowflake.Client
             var elementType = GetItemTypeFromCollection(paramType);
             if (IsSimpleType(elementType))
             {
-                int i = 0;
+                var i = 0;
                 foreach (var item in enumerable)
                 {
                     i++;
@@ -83,7 +83,7 @@ namespace Snowflake.Client
             var elementType = type.GetGenericArguments().FirstOrDefault()
                                 ?? type.GetElementType()
                                 ?? type.GetInterfaces().FirstOrDefault(t => t.IsGenericType
-                                    && t.GetGenericTypeDefinition() == typeof(IEnumerable<>)).GenericTypeArguments.FirstOrDefault();
+                                    && t.GetGenericTypeDefinition() == typeof(IEnumerable<>))?.GenericTypeArguments.FirstOrDefault();
 
             return elementType;
         }

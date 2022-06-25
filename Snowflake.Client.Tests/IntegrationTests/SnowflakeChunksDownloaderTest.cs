@@ -1,11 +1,12 @@
 ﻿using NUnit.Framework;
+using Snowflake.Client.Model;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Snowflake.Client.Tests.IntegrationTests
 {
     [TestFixture]
-    public class SnowflakeChunksDowloaderTest : IntegrationTestBase
+    public class SnowflakeChunksDownloaderTest : IntegrationTestBase
     {
         [Test]
         public async Task DownloadAndParseChunks()

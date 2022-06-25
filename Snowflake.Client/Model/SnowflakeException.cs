@@ -1,6 +1,6 @@
 using System;
 
-namespace Snowflake.Client
+namespace Snowflake.Client.Model
 {
     [Serializable]
     public class SnowflakeException : Exception

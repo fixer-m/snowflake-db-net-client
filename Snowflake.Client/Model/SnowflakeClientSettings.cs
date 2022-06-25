@@ -5,7 +5,7 @@ using System.Text.Json;
 namespace Snowflake.Client.Model
 {
     /// <summary>
-    /// Configuration for SnowlfakeClient
+    /// Configuration for SnowflakeClient
     /// </summary>
     public class SnowflakeClientSettings
     {
@@ -25,24 +25,24 @@ namespace Snowflake.Client.Model
         public SessionInfo SessionInfo { get; private set; }
 
         /// <summary>
-        /// Serializeer options used to map data response to your model
+        /// Serializer options used to map data response to your model
         /// </summary>
         public JsonSerializerOptions JsonMapperOptions { get; private set; }
 
-        public SnowflakeClientSettings(AuthInfo authInfo, SessionInfo sessionInfo = null, UrlInfo urlInfo = null, JsonSerializerOptions jsonMapperOptions = null)
+        public SnowflakeClientSettings(AuthInfo authInfo, SessionInfo sessionInfo = null, UrlInfo urlInfo = null,
+            JsonSerializerOptions jsonMapperOptions = null)
         {
             AuthInfo = authInfo ?? new AuthInfo();
             SessionInfo = sessionInfo ?? new SessionInfo();
             UrlInfo = urlInfo ?? new UrlInfo();
             JsonMapperOptions = jsonMapperOptions ?? new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
 
-            if (string.IsNullOrEmpty(UrlInfo.Host))
-                UrlInfo.Host = BuildHostName(AuthInfo.Account, AuthInfo.Region);
-            else
-                UrlInfo.Host = ReplaceUnderscores(UrlInfo.Host);
+            UrlInfo.Host = string.IsNullOrEmpty(UrlInfo.Host)
+                ? BuildHostName(AuthInfo.Account, AuthInfo.Region)
+                : ReplaceUnderscores(UrlInfo.Host);
         }
 
-        private string BuildHostName(string account, string region)
+        private static string BuildHostName(string account, string region)
         {
             if (string.IsNullOrEmpty(account))
                 throw new ArgumentException("Account name cannot be empty.");
@@ -62,9 +62,9 @@ namespace Snowflake.Client.Model
             return hostname.ToLower();
         }
 
-        // Undescores in hostname will lead to SSL cert verification issue.
+        // Underscores in hostname will lead to SSL cert verification issue.
         // See https://github.com/snowflakedb/snowflake-connector-net/issues/160#issuecomment-692883663
-        private string ReplaceUnderscores(string account)
+        private static string ReplaceUnderscores(string account)
         {
             return account.Replace("_", "-");
         }

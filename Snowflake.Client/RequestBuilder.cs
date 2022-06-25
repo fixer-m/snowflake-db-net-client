@@ -21,26 +21,26 @@ namespace Snowflake.Client
 
         internal RequestBuilder(UrlInfo urlInfo)
         {
-            this._urlInfo = urlInfo;
+            _urlInfo = urlInfo;
 
-            this._jsonSerializerOptions = new JsonSerializerOptions()
+            _jsonSerializerOptions = new JsonSerializerOptions()
             {
                 IgnoreNullValues = true
             };
 
-            this._clientInfo = new ClientAppInfo();
+            _clientInfo = new ClientAppInfo();
         }
 
         internal void SetSessionTokens(string sessionToken, string masterToken)
         {
-            this._sessionToken = sessionToken;
-            this._masterToken = masterToken;
+            _sessionToken = sessionToken;
+            _masterToken = masterToken;
         }
 
         internal void ClearSessionTokens()
         {
-            this._sessionToken = null;
-            this._masterToken = null;
+            _sessionToken = null;
+            _masterToken = null;
         }
 
         internal HttpRequestMessage BuildLoginRequest(AuthInfo authInfo, SessionInfo sessionInfo)
@@ -132,12 +132,14 @@ namespace Snowflake.Client
 
         internal Uri BuildLoginUrl(SessionInfo sessionInfo)
         {
-            var queryParams = new Dictionary<string, string>();
-            queryParams[SnowflakeConst.SF_QUERY_WAREHOUSE] = sessionInfo.Warehouse;
-            queryParams[SnowflakeConst.SF_QUERY_DB] = sessionInfo.Database;
-            queryParams[SnowflakeConst.SF_QUERY_SCHEMA] = sessionInfo.Schema;
-            queryParams[SnowflakeConst.SF_QUERY_ROLE] = sessionInfo.Role;
-            queryParams[SnowflakeConst.SF_QUERY_REQUEST_ID] = Guid.NewGuid().ToString(); // extract to shared part ?
+            var queryParams = new Dictionary<string, string>
+            {
+                [SnowflakeConst.SF_QUERY_WAREHOUSE] = sessionInfo.Warehouse,
+                [SnowflakeConst.SF_QUERY_DB] = sessionInfo.Database,
+                [SnowflakeConst.SF_QUERY_SCHEMA] = sessionInfo.Schema,
+                [SnowflakeConst.SF_QUERY_ROLE] = sessionInfo.Role,
+                [SnowflakeConst.SF_QUERY_REQUEST_ID] = Guid.NewGuid().ToString() // extract to shared part ?
+            };
 
             var loginUrl = BuildUri(SnowflakeConst.SF_LOGIN_PATH, queryParams);
             return loginUrl;
@@ -145,9 +147,11 @@ namespace Snowflake.Client
 
         internal Uri BuildCancelQueryUrl()
         {
-            var queryParams = new Dictionary<string, string>();
-            queryParams[SnowflakeConst.SF_QUERY_REQUEST_ID] = Guid.NewGuid().ToString();
-            queryParams[SnowflakeConst.SF_QUERY_REQUEST_GUID] = Guid.NewGuid().ToString();
+            var queryParams = new Dictionary<string, string>
+            {
+                [SnowflakeConst.SF_QUERY_REQUEST_ID] = Guid.NewGuid().ToString(),
+                [SnowflakeConst.SF_QUERY_REQUEST_GUID] = Guid.NewGuid().ToString()
+            };
 
             var url = BuildUri(SnowflakeConst.SF_QUERY_CANCEL_PATH, queryParams);
             return url;
@@ -155,9 +159,11 @@ namespace Snowflake.Client
 
         internal Uri BuildRenewSessionUrl()
         {
-            var queryParams = new Dictionary<string, string>();
-            queryParams[SnowflakeConst.SF_QUERY_REQUEST_ID] = Guid.NewGuid().ToString();
-            queryParams[SnowflakeConst.SF_QUERY_REQUEST_GUID] = Guid.NewGuid().ToString();
+            var queryParams = new Dictionary<string, string>
+            {
+                [SnowflakeConst.SF_QUERY_REQUEST_ID] = Guid.NewGuid().ToString(),
+                [SnowflakeConst.SF_QUERY_REQUEST_GUID] = Guid.NewGuid().ToString()
+            };
 
             var url = BuildUri(SnowflakeConst.SF_TOKEN_REQUEST_PATH, queryParams);
             return url;
@@ -165,8 +171,10 @@ namespace Snowflake.Client
 
         private Uri BuildQueryUrl()
         {
-            var queryParams = new Dictionary<string, string>();
-            queryParams[SnowflakeConst.SF_QUERY_REQUEST_ID] = Guid.NewGuid().ToString();
+            var queryParams = new Dictionary<string, string>
+            {
+                [SnowflakeConst.SF_QUERY_REQUEST_ID] = Guid.NewGuid().ToString()
+            };
 
             var loginUrl = BuildUri(SnowflakeConst.SF_QUERY_PATH, queryParams);
             return loginUrl;
@@ -174,11 +182,13 @@ namespace Snowflake.Client
 
         internal Uri BuildUri(string basePath, Dictionary<string, string> queryParams = null)
         {
-            UriBuilder uriBuilder = new UriBuilder();
-            uriBuilder.Scheme = _urlInfo.Protocol;
-            uriBuilder.Host = _urlInfo.Host;
-            uriBuilder.Port = _urlInfo.Port;
-            uriBuilder.Path = basePath;
+            var uriBuilder = new UriBuilder
+            {
+                Scheme = _urlInfo.Protocol,
+                Host = _urlInfo.Host,
+                Port = _urlInfo.Port,
+                Path = basePath
+            };
 
             if (queryParams != null && queryParams.Count > 0)
             {
@@ -188,7 +198,7 @@ namespace Snowflake.Client
                     if (!string.IsNullOrEmpty(kvp.Value))
                         paramCollection.Add(kvp.Key, kvp.Value);
                 }
-                uriBuilder.Query = paramCollection.ToString();
+                uriBuilder.Query = paramCollection.ToString() ?? "";
             }
 
             return uriBuilder.Uri;

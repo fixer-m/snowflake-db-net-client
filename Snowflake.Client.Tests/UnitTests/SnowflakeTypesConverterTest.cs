@@ -86,7 +86,7 @@ namespace Snowflake.Client.Tests.UnitTests
         [TestCase("0a0b0c", 10, 11, 12)]
         public void ConvertHexToBytes(string hex, byte b1, byte b2, byte b3)
         {
-            byte[] expectedBytes = new byte[] { b1, b2, b3 };
+            var expectedBytes = new byte[] { b1, b2, b3 };
             var resultBytes = SnowflakeTypesConverter.HexToBytes(hex);
 
             Assert.AreEqual(expectedBytes, resultBytes);

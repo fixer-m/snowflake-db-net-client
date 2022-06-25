@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using Snowflake.Client.Model;
 
 namespace Snowflake.Client
 {
@@ -15,7 +16,7 @@ namespace Snowflake.Client
             switch (snowflakeType)
             {
                 case "date":
-                    long srcValLong = long.Parse(value);
+                    var srcValLong = long.Parse(value);
                     return UnixEpoch.AddDays(srcValLong);
 
                 case "time": // to timespan? https://github.com/snowflakedb/snowflake-connector-net/issues/327
@@ -35,18 +36,18 @@ namespace Snowflake.Client
             switch (snowflakeType)
             {
                 case "timestamp_tz":
-                    int spaceIndex = value.IndexOf(' ');
-                    int offset = int.Parse(value.Substring(spaceIndex + 1, value.Length - spaceIndex - 1));
-                    TimeSpan offSetTimespan = new TimeSpan((offset - 1440) / 60, 0, 0);
+                    var spaceIndex = value.IndexOf(' ');
+                    var offset = int.Parse(value.Substring(spaceIndex + 1, value.Length - spaceIndex - 1));
+                    var offSetTimespan = new TimeSpan((offset - 1440) / 60, 0, 0);
 
-                    var secAndNsecTZPair = ExtractTimestamp(value.Substring(0, spaceIndex));
-                    long ticksTZ = (secAndNsecTZPair.Item1 * 1000 * 1000 * 1000 + secAndNsecTZPair.Item2) / 100;
-                    return new DateTimeOffset(UnixEpoch.Ticks + ticksTZ, TimeSpan.Zero).ToOffset(offSetTimespan);
+                    var secAndNsecTzPair = ExtractTimestamp(value.Substring(0, spaceIndex));
+                    var ticksTz = (secAndNsecTzPair.Item1 * 1000 * 1000 * 1000 + secAndNsecTzPair.Item2) / 100;
+                    return new DateTimeOffset(UnixEpoch.Ticks + ticksTz, TimeSpan.Zero).ToOffset(offSetTimespan);
 
                 case "timestamp_ltz":
-                    var secAndNsecLTZPair = ExtractTimestamp(value);
-                    long ticksLTZ = (secAndNsecLTZPair.Item1 * 1000 * 1000 * 1000 + secAndNsecLTZPair.Item2) / 100;
-                    return new DateTimeOffset(UnixEpoch.Ticks + ticksLTZ, TimeSpan.Zero).ToLocalTime();
+                    var secAndNsecLtzPair = ExtractTimestamp(value);
+                    var ticksLtz = (secAndNsecLtzPair.Item1 * 1000 * 1000 * 1000 + secAndNsecLtzPair.Item2) / 100;
+                    return new DateTimeOffset(UnixEpoch.Ticks + ticksLtz, TimeSpan.Zero).ToLocalTime();
 
                 default:
                     throw new SnowflakeException($"Conversion from {snowflakeType} to DateTimeOffset is not supported.");
@@ -71,7 +72,7 @@ namespace Snowflake.Client
         internal static string BytesToHex(byte[] bytes)
         {
             var hexBuilder = new StringBuilder(bytes.Length * 2);
-            foreach (byte b in bytes)
+            foreach (var b in bytes)
             {
                 hexBuilder.AppendFormat("{0:x2}", b);
             }
@@ -81,10 +82,10 @@ namespace Snowflake.Client
 
         internal static byte[] HexToBytes(string hex)
         {
-            int NumberChars = hex.Length;
-            byte[] bytes = new byte[NumberChars / 2];
+            var numberChars = hex.Length;
+            var bytes = new byte[numberChars / 2];
 
-            for (int i = 0; i < NumberChars; i += 2)
+            for (var i = 0; i < numberChars; i += 2)
                 bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
 
             return bytes;
@@ -92,7 +93,7 @@ namespace Snowflake.Client
 
         private static Tuple<long, long> ExtractTimestamp(string srcVal)
         {
-            int dotIndex = srcVal.IndexOf('.');
+            var dotIndex = srcVal.IndexOf('.');
 
             if (dotIndex == -1)
                 return Tuple.Create(long.Parse(srcVal), 0L);

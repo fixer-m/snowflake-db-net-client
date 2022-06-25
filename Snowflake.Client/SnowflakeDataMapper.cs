@@ -7,18 +7,18 @@ namespace Snowflake.Client
 {
     public static class SnowflakeDataMapper
     {
-        private static JsonSerializerOptions JsonMapperOptions = new JsonSerializerOptions();
+        private static JsonSerializerOptions _jsonMapperOptions = new JsonSerializerOptions();
 
         public static void SetJsonMapperOptions(JsonSerializerOptions jsonMapperOptions)
         {
             if (jsonMapperOptions != null)
-                JsonMapperOptions = jsonMapperOptions;
+                _jsonMapperOptions = jsonMapperOptions;
         }
 
         public static IEnumerable<T> MapTo<T>(List<ColumnDescription> columns, List<List<string>> rows)
         {
             if (columns == null || columns.Count == 0)
-                throw new ArgumentNullException("Columns argument should be not empty.");
+                throw new ArgumentNullException(nameof(columns));
 
             if (rows == null)
                 throw new ArgumentNullException(nameof(rows));
@@ -26,7 +26,7 @@ namespace Snowflake.Client
             foreach (var rowRecord in rows)
             {
                 var jsonString = BuildJsonString(columns, rowRecord);
-                yield return JsonSerializer.Deserialize<T>(jsonString, JsonMapperOptions);
+                yield return JsonSerializer.Deserialize<T>(jsonString, _jsonMapperOptions);
             }
         }
 
@@ -34,7 +34,7 @@ namespace Snowflake.Client
         {
             var keyValuePairs = new List<string>();
 
-            for (int i = 0; i < columns.Count; i++)
+            for (var i = 0; i < columns.Count; i++)
             {
                 var jsonTokenValue = ConvertColumnValueToJsonToken(rowRecord[i], columns[i].Type);
                 var kvPair = $"\"{columns[i].Name}\": {jsonTokenValue}";

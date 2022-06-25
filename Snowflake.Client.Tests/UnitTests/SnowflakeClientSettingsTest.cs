@@ -42,10 +42,10 @@ namespace Snowflake.Client.Tests.UnitTests
         [Test]
         public void AuthInfo_Ctor_AccountWithUnderscore()
         {
-            var authInfo = new AuthInfo("user", "pw", "account_with_undescore");
+            var authInfo = new AuthInfo("user", "pw", "account_with_underscore");
             var settings = new SnowflakeClientSettings(authInfo);
 
-            Assert.AreEqual("account-with-undescore.snowflakecomputing.com", settings.UrlInfo.Host);
+            Assert.AreEqual("account-with-underscore.snowflakecomputing.com", settings.UrlInfo.Host);
         }
 
         [Test]
@@ -55,7 +55,10 @@ namespace Snowflake.Client.Tests.UnitTests
         {
             var authInfo = new AuthInfo("user", "pw", account);
 
-            Assert.Throws<ArgumentException>(() => new SnowflakeClientSettings(authInfo));
+            Assert.Throws<ArgumentException>(() =>
+            {
+                var snowflakeClientSettings = new SnowflakeClientSettings(authInfo);
+            });
         }
 
         [Test]
@@ -157,10 +160,10 @@ namespace Snowflake.Client.Tests.UnitTests
         public void UrlInfo_Explicit_Host_Account_WithUnderscore()
         {
             var authInfo = new AuthInfo("user", "pw", "account");
-            var urlInfo = new UrlInfo("account_with_undescore.snowflakecomputing.com");
+            var urlInfo = new UrlInfo("account_with_underscore.snowflakecomputing.com");
             var settings = new SnowflakeClientSettings(authInfo, null, urlInfo);
 
-            Assert.AreEqual($"account-with-undescore.snowflakecomputing.com", settings.UrlInfo.Host);
+            Assert.AreEqual($"account-with-underscore.snowflakecomputing.com", settings.UrlInfo.Host);
         }
 
         [Test]

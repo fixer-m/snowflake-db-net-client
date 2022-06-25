@@ -6,7 +6,7 @@
     public class AuthInfo
     {
         /// <summary>
-        /// Your Snofwlake account name
+        /// Your Snowflake account name
         /// </summary>
         public string Account { get; set; }
 

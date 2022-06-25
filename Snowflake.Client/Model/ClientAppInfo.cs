@@ -1,6 +1,6 @@
 ﻿using Snowflake.Client.Json;
 
-namespace Snowflake.Client
+namespace Snowflake.Client.Model
 {
     public class ClientAppInfo
     {
@@ -23,7 +23,7 @@ namespace Snowflake.Client
 #endif
             };
 
-            DriverVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            DriverVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "";
             DriverName = ".NET_Snowflake.Client";
         }
     }

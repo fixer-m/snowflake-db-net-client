@@ -60,7 +60,7 @@ namespace Snowflake.Client
             return JsonSerializer.Deserialize<T>(json, _jsonSerializerOptions);
         }
 
-        private void SetServicePointOptions(Uri requestUri)
+        private static void SetServicePointOptions(Uri requestUri)
         {
             var point = ServicePointManager.FindServicePoint(requestUri);
 

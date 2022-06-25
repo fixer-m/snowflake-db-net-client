@@ -1,6 +1,6 @@
-﻿using Snowflake.Client.Tests.IntegrationTests.Models;
-using System.IO;
+﻿using System.IO;
 using System.Text.Json;
+using Snowflake.Client.Tests.Models;
 
 namespace Snowflake.Client.Tests.IntegrationTests
 {
@@ -12,9 +12,9 @@ namespace Snowflake.Client.Tests.IntegrationTests
         {
             var configJson = File.ReadAllText("testconfig.json");
             var testParameters = JsonSerializer.Deserialize<TestConfiguration>(configJson, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
-            var conectionInfo = testParameters.Connection;
+            var connectionInfo = testParameters.Connection;
 
-            _snowflakeClient = new SnowflakeClient(conectionInfo.User, conectionInfo.Password, conectionInfo.Account, conectionInfo.Region);
+            _snowflakeClient = new SnowflakeClient(connectionInfo.User, connectionInfo.Password, connectionInfo.Account, connectionInfo.Region);
         }
     }
 }

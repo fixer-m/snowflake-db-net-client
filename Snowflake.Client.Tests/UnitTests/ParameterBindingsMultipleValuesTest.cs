@@ -24,7 +24,7 @@ namespace Snowflake.Client.Tests.UnitTests
 
             Assert.AreEqual(values.Count, bindings.Count);
 
-            int i = 1;
+            var i = 1;
             foreach (var binding in bindings)
             {
                 Assert.IsTrue(binding.Key == i.ToString());
@@ -44,7 +44,7 @@ namespace Snowflake.Client.Tests.UnitTests
 
             Assert.AreEqual(values.Length, bindings.Count);
 
-            int i = 1;
+            var i = 1;
             foreach (var binding in bindings)
             {
                 Assert.IsTrue(binding.Key == i.ToString());
@@ -65,7 +65,7 @@ namespace Snowflake.Client.Tests.UnitTests
 
             Assert.AreEqual(values.Count(), bindings.Count);
 
-            int i = 1;
+            var i = 1;
             foreach (var binding in bindings)
             {
                 Assert.IsTrue(binding.Key == i.ToString());
@@ -89,7 +89,7 @@ namespace Snowflake.Client.Tests.UnitTests
 
             Assert.AreEqual(values.Count(), bindings.Count);
 
-            int i = 0;
+            var i = 0;
             foreach (var binding in bindings)
             {
                 Assert.IsTrue(binding.Key == values.Keys.ElementAt(i));
@@ -119,7 +119,7 @@ namespace Snowflake.Client.Tests.UnitTests
             Assert.AreEqual(values.Count(), bindings.Count);
 
 
-            for (int i = 0; i < bindings.Count; i++)
+            for (var i = 0; i < bindings.Count; i++)
             {
                 Assert.IsTrue(bindings.Keys.ElementAt(i) == values.Keys.ElementAt(i));
             }

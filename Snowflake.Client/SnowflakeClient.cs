@@ -16,9 +16,8 @@ namespace Snowflake.Client
         /// <summary>
         /// Current Snowflake session.
         /// </summary>
-        public SnowflakeSession SnowflakeSession => _session;
+        public SnowflakeSession SnowflakeSession { get; private set; }
 
-        private SnowflakeSession _session;
         private readonly RestClient _restClient;
         private readonly RequestBuilder _requestBuilder;
         private readonly SnowflakeClientSettings _clientSettings;
@@ -61,7 +60,7 @@ namespace Snowflake.Client
             SnowflakeDataMapper.SetJsonMapperOptions(settings.JsonMapperOptions);
         }
 
-        private void ValidateClientSettings(SnowflakeClientSettings settings)
+        private static void ValidateClientSettings(SnowflakeClientSettings settings)
         {
             if (settings == null)
                 throw new ArgumentException("Settings object cannot be null.");
@@ -88,11 +87,11 @@ namespace Snowflake.Client
         /// <summary>
         /// Initializes new Snowflake session.
         /// </summary>
-        /// <returns>True if session succesfully initialized</returns>
+        /// <returns>True if session successfully initialized</returns>
         public async Task<bool> InitNewSessionAsync(CancellationToken ct = default)
         {
-            _session = await AuthenticateAsync(_clientSettings.AuthInfo, _clientSettings.SessionInfo, ct).ConfigureAwait(false);
-            _requestBuilder.SetSessionTokens(_session.SessionToken, _session.MasterToken);
+            SnowflakeSession = await AuthenticateAsync(_clientSettings.AuthInfo, _clientSettings.SessionInfo, ct).ConfigureAwait(false);
+            _requestBuilder.SetSessionTokens(SnowflakeSession.SessionToken, SnowflakeSession.MasterToken);
 
             return true;
         }
@@ -104,7 +103,7 @@ namespace Snowflake.Client
             var response = await _restClient.SendAsync<LoginResponse>(loginRequest, ct).ConfigureAwait(false);
 
             if (!response.Success)
-                throw new SnowflakeException($"Athentication failed. Message: {response.Message}", response.Code);
+                throw new SnowflakeException($"Authentication failed. Message: {response.Message}", response.Code);
 
             return new SnowflakeSession(response.Data);
         }
@@ -112,11 +111,11 @@ namespace Snowflake.Client
         /// <summary>
         /// Renew session
         /// </summary>
-        /// <returns>True if session succesfully renewed</returns>
+        /// <returns>True if session successfully renewed</returns>
         public async Task<bool> RenewSessionAsync(CancellationToken ct = default)
         {
-            if (_session == null)
-                throw new SnowflakeException("Session is not itialized yet.");
+            if (SnowflakeSession == null)
+                throw new SnowflakeException("Session is not initialized yet.");
 
             var renewSessionRequest = _requestBuilder.BuildRenewSessionRequest();
             var response = await _restClient.SendAsync<RenewSessionResponse>(renewSessionRequest, ct).ConfigureAwait(false);
@@ -124,8 +123,8 @@ namespace Snowflake.Client
             if (!response.Success)
                 throw new SnowflakeException($"Renew session failed. Message: {response.Message}", response.Code);
 
-            _session.Renew(response.Data);
-            _requestBuilder.SetSessionTokens(_session.SessionToken, _session.MasterToken);
+            SnowflakeSession.Renew(response.Data);
+            _requestBuilder.SetSessionTokens(SnowflakeSession.SessionToken, SnowflakeSession.MasterToken);
 
             return true;
         }
@@ -153,7 +152,7 @@ namespace Snowflake.Client
         public async Task<long> ExecuteAsync(string sql, object sqlParams = null, CancellationToken ct = default)
         {
             var response = await QueryInternalAsync(sql, sqlParams, false, ct).ConfigureAwait(false);
-            long affectedRows = SnowflakeUtils.GetAffectedRowsCount(response);
+            var affectedRows = SnowflakeUtils.GetAffectedRowsCount(response);
 
             return affectedRows;
         }
@@ -169,11 +168,11 @@ namespace Snowflake.Client
         {
             var response = await QueryInternalAsync(sql, sqlParams, false, ct).ConfigureAwait(false);
 
-            var rowset = response.Data.RowSet;
+            var rowSet = response.Data.RowSet;
 
             if (response.Data.Chunks != null && response.Data.Chunks.Count > 0)
             {
-                rowset = await ChunksDownloader.DownloadAndParseChunksAsync(new ChunksDownloadInfo()
+                rowSet = await ChunksDownloader.DownloadAndParseChunksAsync(new ChunksDownloadInfo()
                 {
                     ChunkHeaders = response.Data.ChunkHeaders,
                     Chunks = response.Data.Chunks,
@@ -181,7 +180,7 @@ namespace Snowflake.Client
                 });
             }
 
-            var result = SnowflakeDataMapper.MapTo<T>(response.Data.RowType, rowset);
+            var result = SnowflakeDataMapper.MapTo<T>(response.Data.RowType, rowSet);
             return result;
         }
 
@@ -217,7 +216,7 @@ namespace Snowflake.Client
 
         private async Task<QueryExecResponse> QueryInternalAsync(string sql, object sqlParams = null, bool describeOnly = false, CancellationToken ct = default)
         {
-            if (_session == null)
+            if (SnowflakeSession == null)
             {
                 await InitNewSessionAsync().ConfigureAwait(false);
             }
@@ -276,7 +275,7 @@ namespace Snowflake.Client
             var closeSessionRequest = _requestBuilder.BuildCloseSessionRequest();
             var response = await _restClient.SendAsync<CloseResponse>(closeSessionRequest, ct).ConfigureAwait(false);
 
-            _session = null;
+            SnowflakeSession = null;
             _requestBuilder.ClearSessionTokens();
 
             if (!response.Success)

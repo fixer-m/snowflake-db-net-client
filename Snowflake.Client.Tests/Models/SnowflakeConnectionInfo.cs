@@ -1,4 +1,4 @@
-﻿namespace Snowflake.Client.Tests.IntegrationTests.Models
+﻿namespace Snowflake.Client.Tests.Models
 {
     public class SnowflakeConnectionInfo
     {

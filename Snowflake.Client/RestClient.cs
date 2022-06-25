@@ -22,7 +22,10 @@ namespace Snowflake.Client
                 AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
             };
 
-            _httpClient = new HttpClient(httpClientHandler);
+            _httpClient = new HttpClient(httpClientHandler)
+            {
+                Timeout = TimeSpan.FromHours(1)
+            };
 
             _jsonSerializerOptions = new JsonSerializerOptions()
             {

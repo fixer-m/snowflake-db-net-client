@@ -1,4 +1,4 @@
-[![NuGet](https://img.shields.io/badge/nuget-v0.3.9-green.svg)](https://www.nuget.org/packages/Snowflake.Client/) 
+[![NuGet](https://img.shields.io/badge/nuget-v0.4.0-green.svg)](https://www.nuget.org/packages/Snowflake.Client/) 
 [![](https://img.shields.io/nuget/dt/Snowflake.Client.svg)](https://www.nuget.org/packages/Snowflake.Client/) 
 [![Targets](https://img.shields.io/badge/.NET%20Standard-2.0-green.svg)](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) 
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -44,7 +44,7 @@ Improvements in Snowflake.Client vs Snowflake.Data:
 - Performance: Re-uses Snowflake session, i.e. **~3x less roundtrips to SF**
 - Performance: Doesn't have additional intermediate mapping from SF to DB types 
 - Better API: Clean and simple API vs verbose ADO.NET 
-- No third party dependencies vs 5 external packages in Snowflake.Data
+- No third party dependencies vs 9 external packages in Snowflake.Data
 
 New features in Snowflake.Client:
 - Map response data to entities
@@ -55,6 +55,7 @@ New features in Snowflake.Client:
 
 Missing features in Snowflake.Client:
 - Authentication options other than basic user/password
+- GET/PUT command (was recenlty implemented in Snowflake.Data)
 
 ### Parameter binding
 Snowflake supports two placeholder formats for [parameter binding](https://docs.snowflake.com/en/user-guide/python-connector-example.html#qmark-or-numeric-binding):
@@ -118,8 +119,25 @@ var queryDataResponse = await snowflakeClient.QueryRawResponseAsync("SELECT * FR
 // Maps Snowflake rows and columns to your model (internally uses System.Text.Json)
 var employees = SnowflakeDataMapper.MapTo<Employee>(queryDataResponse.Columns, queryDataResponse.Rows);
 ```
+You can override internal http client. Fr example, this can be used to bypass SSL check:
+```csharp
+var handler = new HttpClientHandler
+{
+    SslProtocols = SslProtocols.Tls12,
+    CheckCertificateRevocationList = false, 
+    ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true // i.e. bypass cert validation
+};
+
+var httpClient = new HttpClient(handler);
+var snowflakeClient = new SnowflakeClient("user", "password", "account", "region");
+snowflakeClient.SetHttpClient(httpClient);
+```
 
 ### Release notes
+
+0.4.0
+- Increased http client tiemout to 1 hour for a long running queries
+- Added missing cancellation token for a few methods
 
 0.3.9
 - Now can handle [long-running queries](https://github.com/fixer-m/snowflake-db-net-client/issues/15) (> 45 seconds)

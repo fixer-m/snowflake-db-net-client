@@ -17,6 +17,7 @@ namespace Snowflake.Client
         {
             var httpClientHandler = new HttpClientHandler
             {
+                UseCookies = false,
                 SslProtocols = SslProtocols.Tls12,
                 CheckCertificateRevocationList = true,
                 AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
@@ -46,19 +47,6 @@ namespace Snowflake.Client
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-            return JsonSerializer.Deserialize<T>(json, _jsonSerializerOptions);
-        }
-
-        [Obsolete]
-        internal T Send<T>(HttpRequestMessage request)
-        {
-            SetServicePointOptions(request.RequestUri);
-
-            var response = _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).Result;
-            response.EnsureSuccessStatusCode();
-
-            var json = response.Content.ReadAsStringAsync().Result;
 
             return JsonSerializer.Deserialize<T>(json, _jsonSerializerOptions);
         }

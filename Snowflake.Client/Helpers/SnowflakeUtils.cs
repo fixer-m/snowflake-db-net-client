@@ -78,6 +78,7 @@ namespace Snowflake.Client.Helpers
                 { "eu-west-1", "" },
                 { "eu-west-2", "aws" },
                 { "eu-central-1", "" },
+                { "eu-north-1", "aws" },
                 { "ap-northeast-1", "aws" },
                 { "ap-south-1", "aws" },
                 { "ap-southeast-1", "" },

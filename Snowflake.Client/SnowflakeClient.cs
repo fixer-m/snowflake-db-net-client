@@ -172,12 +172,12 @@ namespace Snowflake.Client
 
             if (response.Data.Chunks != null && response.Data.Chunks.Count > 0)
             {
-                rowSet = await ChunksDownloader.DownloadAndParseChunksAsync(new ChunksDownloadInfo()
+                rowSet.AddRange(await ChunksDownloader.DownloadAndParseChunksAsync(new ChunksDownloadInfo()
                 {
                     ChunkHeaders = response.Data.ChunkHeaders,
                     Chunks = response.Data.Chunks,
                     Qrmk = response.Data.Qrmk
-                }, ct);
+                }, ct));
             }
 
             var result = SnowflakeDataMapper.MapTo<T>(response.Data.RowType, rowSet);

@@ -14,7 +14,17 @@ namespace Snowflake.Client.Tests.IntegrationTests
             var testParameters = JsonSerializer.Deserialize<TestConfiguration>(configJson, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
             var connectionInfo = testParameters.Connection;
 
-            _snowflakeClient = new SnowflakeClient(connectionInfo.User, connectionInfo.Password, connectionInfo.Account, connectionInfo.Region);
+            _snowflakeClient = new SnowflakeClient(new Model.AuthInfo
+            {
+                User = connectionInfo.User, 
+                Password = connectionInfo.Password, 
+                Account = connectionInfo.Account, 
+                Region = connectionInfo.Region
+            },
+            new Model.SessionInfo
+            {
+                Warehouse = connectionInfo.Warehouse
+            });
         }
     }
 }

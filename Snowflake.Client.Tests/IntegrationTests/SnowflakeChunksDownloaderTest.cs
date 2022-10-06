@@ -29,6 +29,16 @@ namespace Snowflake.Client.Tests.IntegrationTests
 
             Assert.AreEqual(selectCount, records.Count);
         }
+
+        [Test]
+        public async Task QueryAndMap_ResponseWithChunks_AndRowset()
+        {
+            var selectCount = 1300;
+            var result = await _snowflakeClient.QueryAsync<Supplier>($"select top {selectCount} * from SNOWFLAKE_SAMPLE_DATA.TPCH_SF1000.SUPPLIER;");
+            var records = result.ToList();
+
+            Assert.AreEqual(selectCount, records.Count);
+        }
     }
 
     internal class Supplier

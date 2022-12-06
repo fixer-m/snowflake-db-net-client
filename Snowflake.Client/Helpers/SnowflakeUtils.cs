@@ -35,6 +35,7 @@ namespace Snowflake.Client.Helpers
                         var rowsLoadedColumnIndex = response.Data.RowType.IndexOf(rowsLoadedColumn);
                         updateCount = long.Parse(response.Data.RowSet[0][rowsLoadedColumnIndex]);
                     }
+
                     break;
 
                 case SnowflakeStatementType.COPY_UNLOAD:
@@ -44,6 +45,7 @@ namespace Snowflake.Client.Helpers
                         var rowsUnloadedColumnIndex = response.Data.RowType.IndexOf(rowsUnloadedColumn);
                         updateCount = long.Parse(response.Data.RowSet[0][rowsUnloadedColumnIndex]);
                     }
+
                     break;
 
                 case SnowflakeStatementType.SELECT:
@@ -58,7 +60,8 @@ namespace Snowflake.Client.Helpers
             return updateCount;
         }
 
-        // Based on: https://docs.snowflake.com/en/user-guide/admin-account-identifier.html#locator-formats-by-cloud-platform-and-region
+        // Based on: https://docs.snowflake.com/en/user-guide/admin-account-identifier.html
+        // Seacrh for table "Non-VPS Account Locator Formats by Cloud Platform and Region"
         internal static string GetCloudTagByRegion(string region)
         {
             if (string.IsNullOrEmpty(region))
@@ -70,28 +73,41 @@ namespace Snowflake.Client.Helpers
 
             var regionTags = new Dictionary<string, string>
             {
-                { "us-west-2", "" }, // "default" 
+                { "us-west-2", "" }, // "default" one - US West (Oregon)
+                { "us-gov-west-1", "aws" },
                 { "us-east-2", "aws" },
                 { "us-east-1", "" },
                 { "us-east-1-gov", "aws" },
                 { "ca-central-1", "aws" },
+                { "sa-east-1", "aws" },
                 { "eu-west-1", "" },
                 { "eu-west-2", "aws" },
+                { "eu-west-3", "aws" },
                 { "eu-central-1", "" },
                 { "eu-north-1", "aws" },
                 { "ap-northeast-1", "aws" },
+                { "ap-northeast-3", "aws" },
+                { "ap-northeast-2", "aws" },
                 { "ap-south-1", "aws" },
                 { "ap-southeast-1", "" },
                 { "ap-southeast-2", "" },
                 { "us-central1", "gcp" },
+                { "us-east4", "gcp" },
                 { "europe-west2", "gcp" },
                 { "europe-west4", "gcp" },
                 { "west-us-2", "azure" },
+                { "central-us", "azure" },
+                { "south-central-us", "azure" },
                 { "east-us-2", "azure" },
                 { "us-gov-virginia", "azure" },
                 { "canada-central", "azure" },
+                { "uk-south", "azure" },
+                { "north-europe", "azure" },
                 { "west-europe", "azure" },
                 { "switzerland-north", "azure" },
+                { "uae-north", "azure" },
+                { "central-india", "azure" },
+                { "japan-east", "azure" },
                 { "southeast-asia", "azure" },
                 { "australia-east", "azure" }
             };
@@ -99,6 +115,5 @@ namespace Snowflake.Client.Helpers
             regionTags.TryGetValue(region, out var cloudTag);
             return cloudTag ?? "";
         }
-
     }
 }

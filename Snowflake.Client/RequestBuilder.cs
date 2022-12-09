@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Web;
 
 namespace Snowflake.Client
@@ -22,11 +23,18 @@ namespace Snowflake.Client
         internal RequestBuilder(UrlInfo urlInfo)
         {
             _urlInfo = urlInfo;
-
+            
+#if NETSTANDARD
             _jsonSerializerOptions = new JsonSerializerOptions()
             {
                 IgnoreNullValues = true
             };
+#else
+            _jsonSerializerOptions = new JsonSerializerOptions
+            {
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            };
+#endif
 
             _clientInfo = new ClientAppInfo();
         }

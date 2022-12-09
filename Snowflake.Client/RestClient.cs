@@ -41,23 +41,17 @@ namespace Snowflake.Client
 
         internal async Task<T> SendAsync<T>(HttpRequestMessage request, CancellationToken ct)
         {
-            SetServicePointOptions(request.RequestUri);
-
+            request.Headers.ExpectContinue = false;
             var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
+#if NETSTANDARD
             var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
+#else
+            var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+#endif
+            
             return JsonSerializer.Deserialize<T>(json, _jsonSerializerOptions);
-        }
-
-        private static void SetServicePointOptions(Uri requestUri)
-        {
-            var point = ServicePointManager.FindServicePoint(requestUri);
-
-            point.Expect100Continue = false;
-            point.UseNagleAlgorithm = false;
-            point.ConnectionLimit = 20;
         }
     }
 }

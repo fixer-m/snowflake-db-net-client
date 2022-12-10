@@ -24,7 +24,7 @@ namespace Snowflake.Client
         {
             var httpClientHandler = new HttpClientHandler
             {
-                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
             };
 
             Client = new HttpClient(httpClientHandler)

@@ -4,9 +4,9 @@ namespace Snowflake.Client.Model
 {
     public class ClientAppInfo
     {
-        public string DriverName { get; private set; }
-        public string DriverVersion { get; private set; }
-        public LoginRequestClientEnv Environment { get; private set; }
+        public string DriverName { get; }
+        public string DriverVersion { get; }
+        public LoginRequestClientEnv Environment { get; }
 
         public ClientAppInfo()
         {
@@ -14,7 +14,7 @@ namespace Snowflake.Client.Model
             {
                 Application = System.Diagnostics.Process.GetCurrentProcess().ProcessName,
                 OSVersion = $"({System.Environment.OSVersion.VersionString})",
-#if NET46
+#if NETFRAMEWORK
                 NETRuntime = "NETFramework",
                 NETVersion = "4.6",
 #else

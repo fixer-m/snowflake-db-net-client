@@ -9,10 +9,16 @@ namespace Snowflake.Client
     {
         private static JsonSerializerOptions _jsonMapperOptions = new JsonSerializerOptions();
 
-        public static void SetJsonMapperOptions(JsonSerializerOptions jsonMapperOptions)
+        public static void Configure(JsonSerializerOptions jsonMapperOptions)
         {
             if (jsonMapperOptions != null)
                 _jsonMapperOptions = jsonMapperOptions;
+        }
+
+        [Obsolete("Please use Configure method instead")]
+        public static void SetJsonMapperOptions(JsonSerializerOptions jsonMapperOptions)
+        {
+            Configure(jsonMapperOptions);
         }
 
         public static IEnumerable<T> MapTo<T>(List<ColumnDescription> columns, List<List<string>> rows)

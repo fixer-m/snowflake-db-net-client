@@ -20,8 +20,7 @@ namespace Snowflake.Client
         private const string SSE_C_KEY = "x-amz-server-side-encryption-customer-key";
         private const string SSE_C_AES = "AES256";
 
-        private const int PREFETCH_THREADS_COUNT = 4;
-
+        private static int _prefetchThreadsCount = 4;
         private static readonly HttpClient Client;
 
         static ChunksDownloader()
@@ -37,6 +36,14 @@ namespace Snowflake.Client
             };
         }
 
+        public static void Configure(ChunksDownloaderOptions options)
+        {
+            if (options.PrefetchThreadsCount >= 1 && options.PrefetchThreadsCount <= 10)
+            {
+                _prefetchThreadsCount = options.PrefetchThreadsCount;
+            }
+        }
+
         public static async Task<List<List<string>>> DownloadAndParseChunksAsync(ChunksDownloadInfo chunksDownloadInfo, CancellationToken ct = default)
         {
             var chunkHeaders = chunksDownloadInfo.ChunkHeaders;
@@ -49,7 +56,7 @@ namespace Snowflake.Client
                     var chunkRowSet = await GetChunkContentAsync(request, ct).ConfigureAwait(false);
                     var chunkIndex = Array.IndexOf(downloadRequests, request);
                     downloadedChunks.Add(new DownloadedChunkRowSet(request.RequestUri, chunkIndex, chunkRowSet));
-                }, PREFETCH_THREADS_COUNT)
+                }, _prefetchThreadsCount)
                 .ConfigureAwait(false);
 
             var totalRowSet = downloadedChunks.OrderBy(c => c.ChunkIndex).SelectMany(c => c.ChunkRowSet).ToList();
@@ -124,5 +131,16 @@ namespace Snowflake.Client
 
             return new ConcatenatedStream(new Stream[] { openBracket, content, closeBracket });
         }
+    }
+
+    public class ChunksDownloaderOptions
+    {
+        /// <summary>
+        /// Sets threads count which will be used to download response data chunks.
+        /// See PREFETCH_THREADS_COUNT client variable in SF documentation.
+        /// Valid values are: 1 - 10.
+        /// Default value: 4.
+        /// </summary>
+        public int PrefetchThreadsCount { get; set; }
     }
 }

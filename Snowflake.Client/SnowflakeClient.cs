@@ -14,10 +14,11 @@ namespace Snowflake.Client
     public class SnowflakeClient : ISnowflakeClient
     {
         /// <summary>
-        /// Current Snowflake session.
+        /// Current Snowflake session. Null if not initialized.
         /// </summary>
-        public SnowflakeSession SnowflakeSession { get; private set; }
+        public SnowflakeSession SnowflakeSession => _snowflakeSession;
 
+        private SnowflakeSession _snowflakeSession;
         private readonly RestClient _restClient;
         private readonly RequestBuilder _requestBuilder;
         private readonly SnowflakeClientSettings _clientSettings;
@@ -57,7 +58,9 @@ namespace Snowflake.Client
             _clientSettings = settings;
             _restClient = new RestClient();
             _requestBuilder = new RequestBuilder(settings.UrlInfo);
-            SnowflakeDataMapper.SetJsonMapperOptions(settings.JsonMapperOptions);
+
+            SnowflakeDataMapper.Configure(settings.JsonMapperOptions);
+            ChunksDownloader.Configure(settings.ChunksDownloaderOptions);
         }
 
         private static void ValidateClientSettings(SnowflakeClientSettings settings)
@@ -90,8 +93,8 @@ namespace Snowflake.Client
         /// <returns>True if session successfully initialized</returns>
         public async Task<bool> InitNewSessionAsync(CancellationToken ct = default)
         {
-            SnowflakeSession = await AuthenticateAsync(_clientSettings.AuthInfo, _clientSettings.SessionInfo, ct).ConfigureAwait(false);
-            _requestBuilder.SetSessionTokens(SnowflakeSession.SessionToken, SnowflakeSession.MasterToken);
+            _snowflakeSession = await AuthenticateAsync(_clientSettings.AuthInfo, _clientSettings.SessionInfo, ct).ConfigureAwait(false);
+            _requestBuilder.SetSessionTokens(_snowflakeSession.SessionToken, _snowflakeSession.MasterToken);
 
             return true;
         }
@@ -114,7 +117,7 @@ namespace Snowflake.Client
         /// <returns>True if session successfully renewed</returns>
         public async Task<bool> RenewSessionAsync(CancellationToken ct = default)
         {
-            if (SnowflakeSession == null)
+            if (_snowflakeSession == null)
                 throw new SnowflakeException("Session is not initialized yet.");
 
             var renewSessionRequest = _requestBuilder.BuildRenewSessionRequest();
@@ -123,8 +126,8 @@ namespace Snowflake.Client
             if (!response.Success)
                 throw new SnowflakeException($"Renew session failed. Message: {response.Message}", response.Code);
 
-            SnowflakeSession.Renew(response.Data);
-            _requestBuilder.SetSessionTokens(SnowflakeSession.SessionToken, SnowflakeSession.MasterToken);
+            _snowflakeSession.Renew(response.Data);
+            _requestBuilder.SetSessionTokens(_snowflakeSession.SessionToken, _snowflakeSession.MasterToken);
 
             return true;
         }
@@ -218,7 +221,7 @@ namespace Snowflake.Client
 
         private async Task<QueryExecResponse> QueryInternalAsync(string sql, object sqlParams = null, bool describeOnly = false, CancellationToken ct = default)
         {
-            if (SnowflakeSession == null)
+            if (_snowflakeSession == null)
             {
                 await InitNewSessionAsync(ct).ConfigureAwait(false);
             }
@@ -262,7 +265,6 @@ namespace Snowflake.Client
                 {
                     lastResultUrl = response.Data?.GetResultUrl;
                 }
-
             } while (response.Code == 333334 || response.Code == 333333 || response.Code == 390112);
 
             return response;
@@ -277,7 +279,7 @@ namespace Snowflake.Client
             var closeSessionRequest = _requestBuilder.BuildCloseSessionRequest();
             var response = await _restClient.SendAsync<CloseResponse>(closeSessionRequest, ct).ConfigureAwait(false);
 
-            SnowflakeSession = null;
+            _snowflakeSession = null;
             _requestBuilder.ClearSessionTokens();
 
             if (!response.Success)

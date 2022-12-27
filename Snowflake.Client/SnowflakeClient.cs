@@ -233,6 +233,9 @@ namespace Snowflake.Client
             if (response.Code == 390112)
             {
                 await RenewSessionAsync(ct).ConfigureAwait(false);
+
+                // A new instance of HttpQueryRequest should be created for every request
+                queryRequest = _requestBuilder.BuildQueryRequest(sql, sqlParams, describeOnly);
                 response = await _restClient.SendAsync<QueryExecResponse>(queryRequest, ct).ConfigureAwait(false);
             }
 

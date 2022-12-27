@@ -172,12 +172,14 @@ namespace Snowflake.Client
 
             if (response.Data.Chunks != null && response.Data.Chunks.Count > 0)
             {
-                rowSet.AddRange(await ChunksDownloader.DownloadAndParseChunksAsync(new ChunksDownloadInfo()
+                var chunksDownloadInfo = new ChunksDownloadInfo()
                 {
                     ChunkHeaders = response.Data.ChunkHeaders,
                     Chunks = response.Data.Chunks,
                     Qrmk = response.Data.Qrmk
-                }, ct));
+                };
+                var parsedRowSet = await ChunksDownloader.DownloadAndParseChunksAsync(chunksDownloadInfo, ct).ConfigureAwait(false);
+                rowSet.AddRange(parsedRowSet);
             }
 
             var result = SnowflakeDataMapper.MapTo<T>(response.Data.RowType, rowSet);
@@ -234,7 +236,7 @@ namespace Snowflake.Client
             // If query execution takes more than 45 seconds we will get this
             if (response.Code == 333334 || response.Code == 333333)
             {
-                response = await RepeatUntilQueryCompleted(response.Data.GetResultUrl, ct);
+                response = await RepeatUntilQueryCompleted(response.Data.GetResultUrl, ct).ConfigureAwait(false);
             }
 
             if (!response.Success)

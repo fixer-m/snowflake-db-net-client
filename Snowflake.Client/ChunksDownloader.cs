@@ -2,12 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Snowflake.Client.Extensions;
 using Snowflake.Client.Model;
 
 namespace Snowflake.Client
@@ -17,6 +19,8 @@ namespace Snowflake.Client
         private const string SSE_C_ALGORITHM = "x-amz-server-side-encryption-customer-algorithm";
         private const string SSE_C_KEY = "x-amz-server-side-encryption-customer-key";
         private const string SSE_C_AES = "AES256";
+
+        private const int PREFETCH_THREADS_COUNT = 4;
 
         private static readonly HttpClient Client;
 
@@ -35,12 +39,32 @@ namespace Snowflake.Client
 
         public static async Task<List<List<string>>> DownloadAndParseChunksAsync(ChunksDownloadInfo chunksDownloadInfo, CancellationToken ct = default)
         {
+            var chunkHeaders = chunksDownloadInfo.ChunkHeaders;
+            var chunksQrmk = chunksDownloadInfo.Qrmk;
+            var downloadRequests = chunksDownloadInfo.Chunks.Select(c => BuildChunkDownloadRequest(c, chunkHeaders, chunksQrmk)).ToArray();
+
+            var downloadedChunks = new List<DownloadedChunkRowSet>();
+            await downloadRequests.ForEachWithThrottleAsync(async request =>
+                {
+                    var chunkRowSet = await GetChunkContentAsync(request, ct).ConfigureAwait(false);
+                    var chunkIndex = Array.IndexOf(downloadRequests, request);
+                    downloadedChunks.Add(new DownloadedChunkRowSet(request.RequestUri, chunkIndex, chunkRowSet));
+                }, PREFETCH_THREADS_COUNT)
+                .ConfigureAwait(false);
+
+            var totalRowSet = downloadedChunks.OrderBy(c => c.ChunkIndex).SelectMany(c => c.ChunkRowSet).ToList();
+            return totalRowSet;
+        }
+
+        [Obsolete("Use DownloadAndParseChunksAsync instead")]
+        public static async Task<List<List<string>>> DownloadAndParseChunksSingleThreadAsync(ChunksDownloadInfo chunksDownloadInfo, CancellationToken ct = default)
+        {
             var rowSet = new List<List<string>>();
 
             foreach (var chunk in chunksDownloadInfo.Chunks)
             {
                 var downloadRequest = BuildChunkDownloadRequest(chunk, chunksDownloadInfo.ChunkHeaders, chunksDownloadInfo.Qrmk);
-                var chunkRowSet = await GetChunkContentAsync(downloadRequest, ct);
+                var chunkRowSet = await GetChunkContentAsync(downloadRequest, ct).ConfigureAwait(false);
 
                 rowSet.AddRange(chunkRowSet);
             }
@@ -72,7 +96,7 @@ namespace Snowflake.Client
             return request;
         }
 
-        private static async ValueTask<List<List<string>>> GetChunkContentAsync(HttpRequestMessage request, CancellationToken ct = default)
+        private static async Task<List<List<string>>> GetChunkContentAsync(HttpRequestMessage request, CancellationToken ct = default)
         {
             using (var response = await Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false))
             {
@@ -81,7 +105,7 @@ namespace Snowflake.Client
                 using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
                 {
                     var concatStream = BuildDeserializableStream(stream);
-                    return await JsonSerializer.DeserializeAsync<List<List<string>>>(concatStream, cancellationToken: ct);
+                    return await JsonSerializer.DeserializeAsync<List<List<string>>>(concatStream, cancellationToken: ct).ConfigureAwait(false);
                 }
             }
         }

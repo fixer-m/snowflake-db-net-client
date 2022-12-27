@@ -9,14 +9,30 @@ namespace Snowflake.Client.Tests.IntegrationTests
     public class SnowflakeChunksDownloaderTest : IntegrationTestBase
     {
         [Test]
-        public async Task DownloadAndParseChunks()
+        public async Task DownloadAndParseChunks_MultipleThreads()
         {
-            var result = await _snowflakeClient.QueryRawResponseAsync("select top 10000 * from SNOWFLAKE_SAMPLE_DATA.TPCH_SF1000.SUPPLIER;");
+            // Will produce 6 chunks
+            var query = "select top 40000 * from SNOWFLAKE_SAMPLE_DATA.TPCH_SF1000.SUPPLIER;";
+            var result = await _snowflakeClient.QueryRawResponseAsync(query);
 
             var chunksDownloadInfo = new ChunksDownloadInfo() { ChunkHeaders = result.ChunkHeaders, Chunks = result.Chunks, Qrmk = result.Qrmk };
             var parsed = await ChunksDownloader.DownloadAndParseChunksAsync(chunksDownloadInfo);
-
             var totalRowCountInChunks = result.Chunks.Sum(c => c.RowCount);
+
+            Assert.AreEqual(totalRowCountInChunks, parsed.Count);
+        }
+
+        [Test]
+        public async Task DownloadAndParseChunks_SingleThread()
+        {
+            // Will produce 6 chunks
+            var query = "select top 40000 * from SNOWFLAKE_SAMPLE_DATA.TPCH_SF1000.SUPPLIER;";
+            var result = await _snowflakeClient.QueryRawResponseAsync(query);
+
+            var chunksDownloadInfo = new ChunksDownloadInfo() { ChunkHeaders = result.ChunkHeaders, Chunks = result.Chunks, Qrmk = result.Qrmk };
+            var parsed = await ChunksDownloader.DownloadAndParseChunksSingleThreadAsync(chunksDownloadInfo);
+            var totalRowCountInChunks = result.Chunks.Sum(c => c.RowCount);
+
             Assert.AreEqual(totalRowCountInChunks, parsed.Count);
         }
 
@@ -24,17 +40,19 @@ namespace Snowflake.Client.Tests.IntegrationTests
         public async Task QueryAndMap_ResponseWithChunks()
         {
             var selectCount = 10000;
-            var result = await _snowflakeClient.QueryAsync<Supplier>($"select top {selectCount} * from SNOWFLAKE_SAMPLE_DATA.TPCH_SF1000.SUPPLIER;");
+            var query = $"select top {selectCount} * from SNOWFLAKE_SAMPLE_DATA.TPCH_SF1000.SUPPLIER;";
+            var result = await _snowflakeClient.QueryAsync<Supplier>(query);
             var records = result.ToList();
 
             Assert.AreEqual(selectCount, records.Count);
         }
 
         [Test]
-        public async Task QueryAndMap_ResponseWithChunks_AndRowset()
+        public async Task QueryAndMap_ResponseWithChunksAndRowset()
         {
             var selectCount = 1300;
-            var result = await _snowflakeClient.QueryAsync<Supplier>($"select top {selectCount} * from SNOWFLAKE_SAMPLE_DATA.TPCH_SF1000.SUPPLIER;");
+            var query = $"select top {selectCount} * from SNOWFLAKE_SAMPLE_DATA.TPCH_SF1000.SUPPLIER;";
+            var result = await _snowflakeClient.QueryAsync<Supplier>(query);
             var records = result.ToList();
 
             Assert.AreEqual(selectCount, records.Count);

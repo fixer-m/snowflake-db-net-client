@@ -1,5 +1,6 @@
 ﻿using Snowflake.Client.Json;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -50,7 +51,7 @@ namespace Snowflake.Client
             var chunksQrmk = chunksDownloadInfo.Qrmk;
             var downloadRequests = chunksDownloadInfo.Chunks.Select(c => BuildChunkDownloadRequest(c, chunkHeaders, chunksQrmk)).ToArray();
 
-            var downloadedChunks = new List<DownloadedChunkRowSet>();
+            var downloadedChunks = new ConcurrentBag<DownloadedChunkRowSet>();
             await downloadRequests.ForEachWithThrottleAsync(async request =>
                 {
                     var chunkRowSet = await GetChunkContentAsync(request, ct).ConfigureAwait(false);

@@ -63,5 +63,18 @@ namespace Snowflake.Client.Tests.IntegrationTests
             var result = await _snowflakeClient.QueryRawResponseAsync("SELECT CURRENT_USER();");
             Assert.IsNotNull(result);
         }
+        
+        [Test]
+        public async Task QueryRawResponse_WithDownloadChunks()
+        {
+            _snowflakeClient.Settings.DownloadChunksForQueryRawResponses = true;
+            var selectCount = 1370;
+            var query = $"select top {selectCount} * from SNOWFLAKE_SAMPLE_DATA.TPCH_SF1000.SUPPLIER;";
+
+            var result = await _snowflakeClient.QueryRawResponseAsync(query);
+            
+            _snowflakeClient.Settings.DownloadChunksForQueryRawResponses = false;
+            Assert.AreEqual(result.Total, result.Rows.Count);
+        }
     }
 }

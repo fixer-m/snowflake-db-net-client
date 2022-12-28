@@ -34,14 +34,23 @@ namespace Snowflake.Client.Model
         /// </summary>
         public ChunksDownloaderOptions ChunksDownloaderOptions { get; }
 
+        /// <summary>
+        /// Snowflake can return response data in a table form ("rowset") or in chunks or both.
+        /// Set this parameter to true to fetch chunks, so the whole data set will be in a rowset. 
+        /// Default value: False 
+        /// </summary>
+        public bool DownloadChunksForQueryRawResponses { get; set; }
+
         public SnowflakeClientSettings(AuthInfo authInfo, SessionInfo sessionInfo = null, UrlInfo urlInfo = null,
-            JsonSerializerOptions jsonMapperOptions = null, ChunksDownloaderOptions chunksDownloaderOptions = null)
+            JsonSerializerOptions jsonMapperOptions = null, ChunksDownloaderOptions chunksDownloaderOptions = null,
+            bool downloadChunksForQueryRawResponses = false)
         {
             AuthInfo = authInfo ?? new AuthInfo();
             SessionInfo = sessionInfo ?? new SessionInfo();
             UrlInfo = urlInfo ?? new UrlInfo();
             JsonMapperOptions = jsonMapperOptions ?? new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
             ChunksDownloaderOptions = chunksDownloaderOptions ?? new ChunksDownloaderOptions() { PrefetchThreadsCount = 4 };
+            DownloadChunksForQueryRawResponses = downloadChunksForQueryRawResponses;
 
             UrlInfo.Host = string.IsNullOrEmpty(UrlInfo.Host)
                 ? BuildHostName(AuthInfo.Account, AuthInfo.Region)

@@ -18,6 +18,11 @@ namespace Snowflake.Client
         /// </summary>
         public SnowflakeSession SnowflakeSession => _snowflakeSession;
 
+        /// <summary>
+        /// Snowflake Client settings
+        /// </summary>
+        public SnowflakeClientSettings Settings => _clientSettings;
+
         private SnowflakeSession _snowflakeSession;
         private readonly RestClient _restClient;
         private readonly RequestBuilder _requestBuilder;
@@ -216,6 +221,20 @@ namespace Snowflake.Client
         public async Task<SnowflakeQueryRawResponse> QueryRawResponseAsync(string sql, object sqlParams = null, bool describeOnly = false, CancellationToken ct = default)
         {
             var response = await QueryInternalAsync(sql, sqlParams, describeOnly, ct).ConfigureAwait(false);
+
+            if (_clientSettings.DownloadChunksForQueryRawResponses
+                && response.Data.Chunks != null && response.Data.Chunks.Count > 0)
+            {
+                var rowSet = response.Data.RowSet;
+                var chunksDownloadInfo = new ChunksDownloadInfo()
+                {
+                    ChunkHeaders = response.Data.ChunkHeaders,
+                    Chunks = response.Data.Chunks,
+                    Qrmk = response.Data.Qrmk
+                };
+                var parsedRowSet = await ChunksDownloader.DownloadAndParseChunksAsync(chunksDownloadInfo, ct).ConfigureAwait(false);
+                rowSet.AddRange(parsedRowSet);
+            }
 
             return new SnowflakeQueryRawResponse(response.Data);
         }

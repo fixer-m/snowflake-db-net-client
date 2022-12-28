@@ -50,7 +50,7 @@ namespace Snowflake.Client.Tests.IntegrationTests
         [Test]
         public async Task QueryAndMap_ResponseWithChunksAndRowset()
         {
-            var selectCount = 1300;
+            var selectCount = 1370;
             var query = $"select top {selectCount} * from SNOWFLAKE_SAMPLE_DATA.TPCH_SF1000.SUPPLIER;";
             var result = await _snowflakeClient.QueryAsync<Supplier>(query);
             var records = result.ToList();

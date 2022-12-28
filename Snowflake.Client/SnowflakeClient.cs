@@ -147,6 +147,23 @@ namespace Snowflake.Client
         }
 
         /// <summary>
+        /// Execute SQL that selects a single value.
+        /// </summary>
+        /// <param name="sql">The SQL to execute.</param>
+        /// <param name="sqlParams">The parameters to use for this command.</param>
+        /// <returns>The first cell value returned as of type T.</returns>
+        public async Task<T> ExecuteScalarAsync<T>(string sql, object sqlParams = null, CancellationToken ct = default)
+        {
+            var response = await QueryInternalAsync(sql, sqlParams, false, ct).ConfigureAwait(false);
+
+            var firstColumn = response.Data.RowType.FirstOrDefault();
+            var firstColumnValue = response.Data.RowSet.FirstOrDefault()?.FirstOrDefault();
+
+            var result = SnowflakeDataMapper.MapTo<T>(firstColumn, firstColumnValue);
+            return result;
+        }
+
+        /// <summary>
         /// Execute parameterized SQL.
         /// </summary>
         /// <param name="sql">The SQL to execute for this query.</param>

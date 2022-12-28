@@ -21,6 +21,15 @@ namespace Snowflake.Client
             Configure(jsonMapperOptions);
         }
 
+        public static T MapTo<T>(ColumnDescription column, string value)
+        {
+            if (column == null)
+                throw new ArgumentNullException(nameof(column));
+
+            var jsonToken = ConvertColumnValueToJsonToken(value, column.Type);
+            return JsonSerializer.Deserialize<T>(jsonToken, _jsonMapperOptions);
+        }
+
         public static IEnumerable<T> MapTo<T>(List<ColumnDescription> columns, List<List<string>> rows)
         {
             if (columns == null || columns.Count == 0)

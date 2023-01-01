@@ -1,4 +1,4 @@
-[![NuGet](https://img.shields.io/badge/nuget-v0.4.3-green.svg)](https://www.nuget.org/packages/Snowflake.Client/) 
+[![NuGet](https://img.shields.io/badge/nuget-v0.4.4-green.svg)](https://www.nuget.org/packages/Snowflake.Client/) 
 [![](https://img.shields.io/nuget/dt/Snowflake.Client.svg)](https://www.nuget.org/packages/Snowflake.Client/) 
 [![Targets](https://img.shields.io/badge/.NET%20Standard-2.0-green.svg)](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) 
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -119,7 +119,7 @@ var queryDataResponse = await snowflakeClient.QueryRawResponseAsync("SELECT * FR
 // Maps Snowflake rows and columns to your model (internally uses System.Text.Json)
 var employees = SnowflakeDataMapper.MapTo<Employee>(queryDataResponse.Columns, queryDataResponse.Rows);
 ```
-You can override internal http client. Fr example, this can be used to bypass SSL check:
+You can override internal http client. For example, this can be used to bypass SSL check:
 ```csharp
 var handler = new HttpClientHandler
 {
@@ -134,6 +134,21 @@ snowflakeClient.SetHttpClient(httpClient);
 ```
 
 ### Release notes
+
+0.4.4
+- Implemented concurrent `ChunksDownloader`, prefetch threads count is configurable https://github.com/fixer-m/snowflake-db-net-client/issues/26
+- Added client option to prefetch chunks for `QueryRawResponseAsync`
+- Added new public method `ExecuteScalarAsync<T>` https://github.com/fixer-m/snowflake-db-net-client/issues/32
+- Fixed issue with renewing session not working https://github.com/fixer-m/snowflake-db-net-client/issues/31
+
+0.4.3
+- Move to .NET 6
+
+0.4.2
+- Add new regions cloud tags
+
+0.4.1
+- Fixed issue with rowset data not being combined with chunks https://github.com/fixer-m/snowflake-db-net-client/pull/27
 
 0.4.0
 - Increased http client tiemout to 1 hour for a long running queries

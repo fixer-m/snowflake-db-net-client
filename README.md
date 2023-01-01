@@ -136,6 +136,7 @@ snowflakeClient.SetHttpClient(httpClient);
 ### Release notes
 
 0.4.4
+- Now client has exposed `Settings` property, so you can configure client settings after it's creation
 - Implemented concurrent `ChunksDownloader`, prefetch threads count is configurable https://github.com/fixer-m/snowflake-db-net-client/issues/26
 - Added client option to prefetch chunks for `QueryRawResponseAsync`
 - Added new public method `ExecuteScalarAsync<T>` https://github.com/fixer-m/snowflake-db-net-client/issues/32

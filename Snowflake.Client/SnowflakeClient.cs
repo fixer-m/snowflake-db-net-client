@@ -127,11 +127,15 @@ namespace Snowflake.Client
 
             var renewSessionRequest = _requestBuilder.BuildRenewSessionRequest();
             var response = await _restClient.SendAsync<RenewSessionResponse>(renewSessionRequest, ct).ConfigureAwait(false);
-
-            if (!response.Success)
+            
+            if (response.Success)
+                _snowflakeSession.Renew(response.Data);
+            else if (response.Code == 390114)
+                // Authentication token expired, re-authenticate
+                await InitNewSessionAsync(ct).ConfigureAwait(false);
+            else
                 throw new SnowflakeException($"Renew session failed. Message: {response.Message}", response.Code);
-
-            _snowflakeSession.Renew(response.Data);
+                
             _requestBuilder.SetSessionTokens(_snowflakeSession.SessionToken, _snowflakeSession.MasterToken);
 
             return true;

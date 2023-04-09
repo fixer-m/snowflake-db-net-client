@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.4.4</Version>
+    <Version>0.4.5</Version>
     <Authors>fixer_m</Authors>
     <Description>.NET client for Snowflake DB REST API. 
 Provides straightforward and efficient way to execute SQL queries in Snowflake and automatically map response to your models.</Description>

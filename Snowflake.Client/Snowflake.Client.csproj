@@ -32,4 +32,8 @@ Provides straightforward and efficient way to execute SQL queries in Snowflake a
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.53.0" />
+  </ItemGroup>
+
 </Project>

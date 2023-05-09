@@ -3,7 +3,7 @@
     /// <summary>
     /// Snowflake Authentication information.
     /// </summary>
-    public class AuthInfo
+    public class AuthInfo : IAuthInfo
     {
         /// <summary>
         /// Your Snowflake account name

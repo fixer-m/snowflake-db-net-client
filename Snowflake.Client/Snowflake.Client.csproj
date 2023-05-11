@@ -23,6 +23,7 @@ Provides straightforward and efficient way to execute SQL queries in Snowflake a
 
   <ItemGroup>
     <InternalsVisibleTo Include="Snowflake.Client.Tests" />
+    <InternalsVisibleTo Include="Snowflake.Client.Benchmarks" />
   </ItemGroup>
 
   <ItemGroup>

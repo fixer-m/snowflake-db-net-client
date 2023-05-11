@@ -36,7 +36,7 @@ namespace Snowflake.Client.Helpers
             if(hex.Length % 2 != 0)
                 throw new ArgumentException("The hexadecimal string cannot have an odd length.");
 
-            // Get a span over the inp0ut string, for fast/efficient processing of the characters.
+            // Get a span over the input string, for fast/efficient processing of the characters.
             ReadOnlySpan<char> hexSpan = hex.AsSpan();
 
             // Allocate temp storage for decoded hex chars, and encoded base64 characters.

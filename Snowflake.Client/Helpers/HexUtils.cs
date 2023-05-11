@@ -119,7 +119,7 @@ namespace Snowflake.Client.Helpers
 
         private static void EncodeBase64Block(ReadOnlySpan<byte> inBytes, Span<char> outChars)
         {
-            // Encode and write the three bytes as a base64 block (3 bytes becomes 4 base64 characters).
+            // Encode the three bytes as a base64 block (3 bytes becomes 4 base64 characters).
             outChars[0] = __base64Table[(inBytes[0] & 0xfc) >> 2];
             outChars[1] = __base64Table[((inBytes[0] & 0x03) << 4) | ((inBytes[1] & 0xf0) >> 4)];
             outChars[2] = __base64Table[((inBytes[1] & 0x0f) << 2) | ((inBytes[2] & 0xc0) >> 6)];

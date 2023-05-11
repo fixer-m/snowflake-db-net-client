@@ -1,4 +1,5 @@
-﻿using Snowflake.Client.Json;
+﻿using Snowflake.Client.Helpers;
+using Snowflake.Client.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -147,10 +148,8 @@ namespace Snowflake.Client
                     break;
 
                 case "binary":
-                    var bytes = SnowflakeTypesConverter.HexToBytes(value);
-                    var base64 = Convert.ToBase64String(bytes);
                     sb.Append('"');
-                    sb.Append(base64);
+                    HexUtils.HexToBase64(value, sb);
                     sb.Append('"');
                     break;
 

@@ -1,6 +1,7 @@
 ﻿using Snowflake.Client.Json;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.Json;
 
 namespace Snowflake.Client
@@ -38,68 +39,124 @@ namespace Snowflake.Client
             if (rows == null)
                 throw new ArgumentNullException(nameof(rows));
 
+            // Create a string builder to be re-used for each record/row; this approach will minimise string allocations.
+            var sb = new StringBuilder();
+
             foreach (var rowRecord in rows)
             {
-                var jsonString = BuildJsonString(columns, rowRecord);
+                BuildJsonString(columns, rowRecord, sb);
+                string jsonString = sb.ToString();
                 yield return JsonSerializer.Deserialize<T>(jsonString, _jsonMapperOptions);
+
+                // Clear string builder so that it can be re-used in the next loop, thus re-using all of its allocated memory.
+                sb.Clear();
             }
         }
 
-        private static string BuildJsonString(List<ColumnDescription> columns, List<string> rowRecord)
+        private static void BuildJsonString(List<ColumnDescription> columns, List<string> rowRecord, StringBuilder sb)
         {
-            var keyValuePairs = new List<string>();
+            // Append json opening brace.
+            sb.Append('{');
 
-            for (var i = 0; i < columns.Count; i++)
+            if (columns.Count != 0)
             {
-                var jsonTokenValue = ConvertColumnValueToJsonToken(rowRecord[i], columns[i].Type);
-                var kvPair = $"\"{columns[i].Name}\": {jsonTokenValue}";
-                keyValuePairs.Add(kvPair);
+                // Append first property.
+                AppendAsJsonProperty(sb, columns[0].Name, rowRecord[0], columns[0].Type);
+
+                // Append all other properties, prefixed with a comma to separate from previous property.
+                for (int i = 1; i < columns.Count; i++)
+                {
+                    sb.Append(",");
+                    AppendAsJsonProperty(sb, columns[i].Name, rowRecord[i], columns[i].Type);
+                }
             }
 
-            var allKeyPairsJoined = string.Join(", ", keyValuePairs);
-            var json = "{ " + allKeyPairsJoined + " }";
-
-            return json;
+            // Append json closing brace.
+            sb.Append('}');
         }
 
-        private static string ConvertColumnValueToJsonToken(string value, string columnType)
+        private static void AppendAsJsonProperty(
+            StringBuilder sb,
+            string propertyName,
+            string columnValue,
+            string columnType)
         {
-            if (value == null || value == "null")
-                return "null";
+            // Append property name and colon separator.
+            sb.Append('"');
+            sb.Append(propertyName);
+            sb.Append("\":");
 
-            switch (columnType)
+            // Append json property value.
+            ConvertColumnValueToJsonToken(columnValue, columnType, sb);
+        }
+
+        private static string ConvertColumnValueToJsonToken(
+            string value,
+            string columnType)
+        {
+            var sb = new StringBuilder();
+            ConvertColumnValueToJsonToken(value,columnType, sb);
+            return sb.ToString();
+        }
+
+        private static void ConvertColumnValueToJsonToken(
+            string value,
+            string columnType,
+            StringBuilder sb)
+        {
+            if(value is null || value == "null")
+            {
+                sb.Append("null");
+                return;
+            }
+
+            switch(columnType)
             {
                 case "text":
-                    return JsonSerializer.Serialize(value);
+                    sb.Append(JsonSerializer.Serialize(value));
+                    break;
 
                 case "fixed":
                 case "real":
-                    return value;
+                    sb.Append(value);
+                    break;
 
                 case "boolean":
-                    return value == "1" || value.ToLower() == "true" ? "true" : "false";
+                    sb.Append(value == "1" || value.Equals("true", StringComparison.OrdinalIgnoreCase) ? "true" : "false");
+                    break;
 
                 case "date":
                 case "time":
                 case "timestamp_ntz":
-                    return '"' + SnowflakeTypesConverter.ConvertToDateTime(value, columnType).ToString("o") + '"';
+                    sb.Append('"');
+                    sb.Append(SnowflakeTypesConverter.ConvertToDateTime(value, columnType).ToString("o"));
+                    sb.Append('"');
+                    break;
 
                 case "timestamp_ltz":
                 case "timestamp_tz":
-                    return '"' + SnowflakeTypesConverter.ConvertToDateTimeOffset(value, columnType).ToString("o") + '"';
+                    sb.Append('"');
+                    sb.Append(SnowflakeTypesConverter.ConvertToDateTimeOffset(value, columnType).ToString("o"));
+                    sb.Append('"');
+                    break;
 
                 case "object":
                 case "variant":
                 case "array":
-                    return value;
+                    sb.Append(value);
+                    break;
 
                 case "binary":
                     var bytes = SnowflakeTypesConverter.HexToBytes(value);
                     var base64 = Convert.ToBase64String(bytes);
-                    return '"' + base64 + '"';
+                    sb.Append('"');
+                    sb.Append(base64);
+                    sb.Append('"');
+                    break;
 
                 default:
-                    return '"' + value + '"';
+                    sb.Append(value);
+                    break;
             }
         }
     }

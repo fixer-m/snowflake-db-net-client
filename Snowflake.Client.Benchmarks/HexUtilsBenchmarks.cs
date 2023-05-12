@@ -10,14 +10,14 @@ public class HexUtilsBenchmarks
     static readonly string __hexCharsLong = GenerateRandomHex(2_000_000);
 
     [Benchmark]
-    public void HexToBytes_Short()
+    public void HexToBase64_Short()
     {
         var sb = new StringBuilder();
         HexUtils.HexToBase64("0a0b0c", sb);
     }
 
     [Benchmark]
-    public void HexToBytes_Long()
+    public void HexToBase64_Long()
     {
         var sb = new StringBuilder();
         HexUtils.HexToBase64(__hexCharsLong, sb);

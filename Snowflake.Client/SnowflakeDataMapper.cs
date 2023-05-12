@@ -11,7 +11,7 @@ namespace Snowflake.Client
 {
     public static class SnowflakeDataMapper
     {
-        private const int DefaultBufferSize = 512;
+        private const int DefaultBufferSize = 1024;
         private static readonly RecyclableMemoryStreamManager _recyclableMemoryStreamManager = new RecyclableMemoryStreamManager();
         private static readonly Encoding __utf8EncodingNoBom = new UTF8Encoding(false);
         private static JsonSerializerOptions __jsonMapperOptions = new JsonSerializerOptions();

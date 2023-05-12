@@ -1,6 +1,8 @@
 ﻿using System.Text;
 using BenchmarkDotNet.Attributes;
+using Microsoft.Extensions.ObjectPool;
 using Snowflake.Client.Helpers;
+using Snowflake.Client.ObjectPool;
 
 namespace Snowflake.Client.Benchmarks;
 
@@ -9,18 +11,36 @@ public class HexUtilsBenchmarks
 {
     static readonly string __hexCharsLong = GenerateRandomHex(2_000_000);
 
+    static readonly ObjectPool<StringBuilder> __stringBuilderPool =
+        new DefaultObjectPool<StringBuilder>(
+            new CustomStringBuilderPooledObjectPolicy());
+
     [Benchmark]
     public void HexToBase64_Short()
     {
-        var sb = new StringBuilder();
-        HexUtils.HexToBase64("0a0b0c", sb);
+        var sb = __stringBuilderPool.Get();
+        try
+        {
+            HexUtils.HexToBase64("0a0b0c", sb);
+        }
+        finally
+        {
+            __stringBuilderPool.Return(sb);
+        }
     }
 
     [Benchmark]
     public void HexToBase64_Long()
     {
-        var sb = new StringBuilder();
-        HexUtils.HexToBase64(__hexCharsLong, sb);
+        var sb = __stringBuilderPool.Get();
+        try
+        {
+            HexUtils.HexToBase64(__hexCharsLong, sb);
+        }
+        finally
+        {
+            __stringBuilderPool.Return(sb);
+        }
     }
 
     private static string GenerateRandomHex(int length)

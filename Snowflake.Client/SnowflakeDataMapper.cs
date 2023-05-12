@@ -28,7 +28,10 @@ namespace Snowflake.Client
             if (column == null)
                 throw new ArgumentNullException(nameof(column));
 
-            var jsonToken = ConvertColumnValueToJsonToken(value, column.Type);
+            var sb = new StringBuilder(32);
+            ConvertColumnValueToJsonToken(value, column.Type, sb);
+            var jsonToken = sb.ToString();
+
             return JsonSerializer.Deserialize<T>(jsonToken, _jsonMapperOptions);
         }
 
@@ -89,15 +92,6 @@ namespace Snowflake.Client
 
             // Append json property value.
             ConvertColumnValueToJsonToken(columnValue, columnType, sb);
-        }
-
-        private static string ConvertColumnValueToJsonToken(
-            string value,
-            string columnType)
-        {
-            var sb = new StringBuilder();
-            ConvertColumnValueToJsonToken(value,columnType, sb);
-            return sb.ToString();
         }
 
         private static void ConvertColumnValueToJsonToken(

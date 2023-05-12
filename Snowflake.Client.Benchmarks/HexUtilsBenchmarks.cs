@@ -7,20 +7,32 @@ namespace Snowflake.Client.Benchmarks;
 [MemoryDiagnoser]
 public class HexUtilsBenchmarks
 {
-    static readonly string __hexCharsLong = GenerateRandomHex(2_000_000);
+    public static readonly string __hexCharsLong = GenerateRandomHex(2_000_000);
+
+    private MemoryStream _memoryStream;
+    private StreamWriter _streamWriter;
+
+    [GlobalSetup]
+    public void IterationSetup()
+    {
+        _memoryStream = new MemoryStream(1_000_000);
+        _streamWriter = new StreamWriter(_memoryStream);
+    }
 
     [Benchmark]
     public void HexToBase64_Short()
     {
-        var sb = new StringBuilder();
-        HexUtils.HexToBase64("0a0b0c", sb);
+        HexUtils.HexToBase64("0a0b0c", _streamWriter);
+        _streamWriter.Flush();
+        _memoryStream.SetLength(0);
     }
 
     [Benchmark]
     public void HexToBase64_Long()
     {
-        var sb = new StringBuilder();
-        HexUtils.HexToBase64(__hexCharsLong, sb);
+        HexUtils.HexToBase64(__hexCharsLong, _streamWriter);
+        _streamWriter.Flush();
+        _memoryStream.SetLength(0);
     }
 
     private static string GenerateRandomHex(int length)

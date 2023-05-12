@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Text;
+using System.IO;
 
 namespace Snowflake.Client.Helpers
 {
@@ -31,7 +31,7 @@ namespace Snowflake.Client.Helpers
             for(char c = 'a'; c <= 'f'; c++) __hexValueTable[c] = c - 'a' + 10;
         }
 
-        public static void HexToBase64(string hex, StringBuilder sb)
+        public static void HexToBase64(string hex, TextWriter tw)
         {
             if(hex.Length % 2 != 0)
                 throw new ArgumentException("The hexadecimal string cannot have an odd length.");
@@ -41,7 +41,7 @@ namespace Snowflake.Client.Helpers
 
             // Allocate temp storage for decoded hex chars, and encoded base64 characters.
             Span<byte> inBytes = stackalloc byte[3];
-            Span<char> outChars = stackalloc char[4];
+            char[] outChars = new char[4];
 
             // Loop over hexSpan in six character chunks (6 hex chars represents 3 bytes).
             while(hexSpan.Length >= 6)
@@ -55,10 +55,7 @@ namespace Snowflake.Client.Helpers
                 EncodeBase64Block(inBytes, outChars);
 
                 // Write the base64 chars to the string builder.
-                sb.Append(outChars[0]);
-                sb.Append(outChars[1]);
-                sb.Append(outChars[2]);
-                sb.Append(outChars[3]);
+                tw.Write(outChars);
 
                 // Move hexSpan forward six chars.
                 hexSpan = hexSpan.Slice(6);
@@ -77,10 +74,9 @@ namespace Snowflake.Client.Helpers
                     inBytes[1] = 0;
                     inBytes[2] = 0;
                     EncodeBase64Block(inBytes, outChars);
-                    sb.Append(outChars[0]);
-                    sb.Append(outChars[1]);
-                    sb.Append(__base64PaddingChar);
-                    sb.Append(__base64PaddingChar);
+                    outChars[2] = __base64PaddingChar;
+                    outChars[3] = __base64PaddingChar;
+                    tw.Write(outChars);
                     break;
 
                 case 4:
@@ -89,10 +85,8 @@ namespace Snowflake.Client.Helpers
                     inBytes[1] = HexToByte(hexSpan.Slice(2));
                     inBytes[2] = 0;
                     EncodeBase64Block(inBytes, outChars);
-                    sb.Append(outChars[0]);
-                    sb.Append(outChars[1]);
-                    sb.Append(outChars[2]);
-                    sb.Append(__base64PaddingChar);
+                    outChars[3] = __base64PaddingChar;
+                    tw.Write(outChars);
                     break;
             }
         }

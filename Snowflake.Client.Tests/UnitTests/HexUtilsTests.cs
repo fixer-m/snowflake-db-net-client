@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.IO;
 using System.Text;
 using NUnit.Framework;
 using Snowflake.Client.Helpers;
@@ -16,11 +17,19 @@ namespace Snowflake.Client.Tests.UnitTests
         {
             var expectedBytes = new byte[] { b1, b2, b3 };
             string expectedBase64 = Convert.ToBase64String(expectedBytes);
+            byte[] expectedUtf8Bytes = Encoding.UTF8.GetBytes(expectedBase64);
 
-            var sb = new StringBuilder();
-            HexUtils.HexToBase64(hex, sb);
+            byte[] actualUtf8Bytes;
 
-            Assert.AreEqual(expectedBase64, sb.ToString());
+            using (var ms = new MemoryStream(32))
+            using (var sw = new StreamWriter(ms))
+            {
+                HexUtils.HexToBase64(hex, sw);
+                sw.Flush();
+                actualUtf8Bytes = ms.ToArray();
+            }
+
+            Assert.AreEqual(expectedUtf8Bytes, actualUtf8Bytes);
         }
 
         [Test]
@@ -28,11 +37,19 @@ namespace Snowflake.Client.Tests.UnitTests
         public void ConvertHexToBytes_VaryingLengths(string hex, byte[] expectedBytes)
         {
             string expectedBase64 = Convert.ToBase64String(expectedBytes);
+            byte[] expectedUtf8Bytes = Encoding.UTF8.GetBytes(expectedBase64);
 
-            var sb = new StringBuilder();
-            HexUtils.HexToBase64(hex, sb);
+            byte[] actualUtf8Bytes;
 
-            Assert.AreEqual(expectedBase64, sb.ToString());
+            using(var ms = new MemoryStream(32))
+            using(var sw = new StreamWriter(ms))
+            {
+                HexUtils.HexToBase64(hex, sw);
+                sw.Flush();
+                actualUtf8Bytes = ms.ToArray();
+            }
+
+            Assert.AreEqual(expectedUtf8Bytes, actualUtf8Bytes);
         }
 
         public static IEnumerable TestCases

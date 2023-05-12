@@ -1,5 +1,7 @@
-﻿using Snowflake.Client.Helpers;
+﻿using Microsoft.Extensions.ObjectPool;
+using Snowflake.Client.Helpers;
 using Snowflake.Client.Json;
+using Snowflake.Client.ObjectPool;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,6 +11,10 @@ namespace Snowflake.Client
 {
     public static class SnowflakeDataMapper
     {
+        private static readonly ObjectPool<StringBuilder> __stringBuilderPool =
+            new DefaultObjectPool<StringBuilder>(
+                new CustomStringBuilderPooledObjectPolicy());
+
         private static JsonSerializerOptions _jsonMapperOptions = new JsonSerializerOptions();
 
         public static void Configure(JsonSerializerOptions jsonMapperOptions)
@@ -28,9 +34,21 @@ namespace Snowflake.Client
             if (column == null)
                 throw new ArgumentNullException(nameof(column));
 
-            var sb = new StringBuilder(32);
-            ConvertColumnValueToJsonToken(value, column.Type, sb);
-            var jsonToken = sb.ToString();
+            // Get a string builder from the pool.
+            var sb = __stringBuilderPool.Get();
+            string jsonToken;
+
+            try
+            {
+                // Ensure the string builder is cleared before we use it.
+                sb.Clear();
+                ConvertColumnValueToJsonToken(value, column.Type, sb);
+                jsonToken = sb.ToString();
+            }
+            finally
+            {
+                __stringBuilderPool.Return(sb);
+            }
 
             return JsonSerializer.Deserialize<T>(jsonToken, _jsonMapperOptions);
         }
@@ -43,17 +61,24 @@ namespace Snowflake.Client
             if (rows == null)
                 throw new ArgumentNullException(nameof(rows));
 
-            // Create a string builder to be re-used for each record/row; this approach will minimise string allocations.
-            var sb = new StringBuilder();
+            // Get a string builder from the pool.
+            var sb = __stringBuilderPool.Get();
 
-            foreach (var rowRecord in rows)
+            try
             {
-                BuildJsonString(columns, rowRecord, sb);
-                string jsonString = sb.ToString();
-                yield return JsonSerializer.Deserialize<T>(jsonString, _jsonMapperOptions);
+                foreach (var rowRecord in rows)
+                {
+                    // Ensure the string builder is cleared before we use it.
+                    sb.Clear();
 
-                // Clear string builder so that it can be re-used in the next loop, thus re-using all of its allocated memory.
-                sb.Clear();
+                    BuildJsonString(columns, rowRecord, sb);
+                    string jsonString = sb.ToString();
+                    yield return JsonSerializer.Deserialize<T>(jsonString, _jsonMapperOptions);
+                }
+            }
+            finally
+            {
+                __stringBuilderPool.Return(sb);
             }
         }
 

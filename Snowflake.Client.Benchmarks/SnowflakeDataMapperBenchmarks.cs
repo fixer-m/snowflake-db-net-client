@@ -18,7 +18,14 @@ public class SnowflakeDataMapperBenchmarks
     [Benchmark]
     public void ResponseWithValues_MapTo_CustomClass()
     {
-        SnowflakeDataMapper.MapTo<CustomClass>(_responseSample.RowType, _objectRowset);
+        var enumerable = SnowflakeDataMapper.MapTo<CustomClass>(_responseSample.RowType, _objectRowset);
+
+        // Enumerate the result to actually execute the code inside the iterator method.
+        string stringValue;
+        foreach(var result in enumerable)
+        {
+            stringValue = result.StringProperty;
+        }
     }
 
     private static QueryExecResponseData GetFakeResponse()
@@ -35,20 +42,25 @@ public class SnowflakeDataMapperBenchmarks
         response.RowType.Add(new ColumnDescription() { Name = "GuidProperty", Type = "text" });
         response.RowType.Add(new ColumnDescription() { Name = "ByteArrayProperty", Type = "binary" });
 
-        response.RowSet.Add(new List<string>()
-            {
-                "Sometext",
-                "true",
-                "7",
-                "27.6",
-                "19.239834",
-                "1600000000.000000000",
-                "1600000000.000000000",
-                "e7412bbf-88ee-4149-b341-101e0f72ec7c",
-                "0080ff"
-            });
+        for(int i=0; i < 10; i++)
+        { 
+            response.RowSet.Add(
+                new List<string>()
+                {
+                    "Sometext",
+                    "true",
+                    "7",
+                    "27.6",
+                    "19.239834",
+                    "1600000000.000000000",
+                    "1600000000.000000000",
+                    "e7412bbf-88ee-4149-b341-101e0f72ec7c",
+                    "0080ff0a0b0c0d0e0f"
+                });
+        }
 
-        response.RowSet.Add(new List<string>()
+        response.RowSet.Add(
+            new List<string>()
             {
                 "null",
                 "null",
@@ -61,8 +73,8 @@ public class SnowflakeDataMapperBenchmarks
                 "null"
             });
 
-
-        response.RowSet.Add(new List<string>()
+        response.RowSet.Add(
+            new List<string>()
             {
                 null,
                 null,
@@ -78,7 +90,7 @@ public class SnowflakeDataMapperBenchmarks
         return response;
     }
 
-    private class CustomClass
+    public class CustomClass
     {
         public string StringProperty { get; set; }
 

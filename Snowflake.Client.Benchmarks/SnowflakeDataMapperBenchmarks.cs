@@ -7,25 +7,25 @@ namespace Snowflake.Client.Benchmarks;
 public class SnowflakeDataMapperBenchmarks
 {
     readonly QueryExecResponseData _responseSample;
-    readonly List<List<string>> _objectRowset;
 
     public SnowflakeDataMapperBenchmarks()
     {
         _responseSample = GetFakeResponse();
-        _objectRowset = new List<List<string>>() { _responseSample.RowSet[0] };
     }
 
     [Benchmark]
-    public void ResponseWithValues_MapTo_CustomClass()
+    public int ResponseWithValues_MapTo_CustomClass()
     {
-        var enumerable = SnowflakeDataMapper.MapTo<CustomClass>(_responseSample.RowType, _objectRowset);
+        var enumerable = SnowflakeDataMapper.MapTo<CustomClass>(_responseSample.RowType, _responseSample.RowSet);
 
         // Enumerate the result to actually execute the code inside the iterator method.
-        string stringValue;
+        int totalLen = 0;
         foreach(var result in enumerable)
         {
-            stringValue = result.StringProperty;
+            totalLen += result.StringProperty?.Length ?? 0;
         }
+
+        return totalLen;
     }
 
     private static QueryExecResponseData GetFakeResponse()
@@ -42,7 +42,7 @@ public class SnowflakeDataMapperBenchmarks
         response.RowType.Add(new ColumnDescription() { Name = "GuidProperty", Type = "text" });
         response.RowType.Add(new ColumnDescription() { Name = "ByteArrayProperty", Type = "binary" });
 
-        for(int i=0; i < 10; i++)
+        for(int i=0; i < 100; i++)
         { 
             response.RowSet.Add(
                 new List<string>()
@@ -58,34 +58,6 @@ public class SnowflakeDataMapperBenchmarks
                     "0080ff0a0b0c0d0e0f"
                 });
         }
-
-        response.RowSet.Add(
-            new List<string>()
-            {
-                "null",
-                "null",
-                "null",
-                "null",
-                "null",
-                "null",
-                "null",
-                "null",
-                "null"
-            });
-
-        response.RowSet.Add(
-            new List<string>()
-            {
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null
-            });
 
         return response;
     }

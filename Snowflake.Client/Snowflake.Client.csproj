@@ -18,11 +18,16 @@ Provides straightforward and efficient way to execute SQL queries in Snowflake a
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="System.Text.Json" Version="4.6.0" />
+    <PackageReference Include="System.Text.Json" Version="7.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.3.2" />
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Snowflake.Client.Tests" />
+    <InternalsVisibleTo Include="Snowflake.Client.Benchmarks" />
   </ItemGroup>
 
   <ItemGroup>

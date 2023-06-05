@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Identity.Client;
 
 namespace Snowflake.Client
 {
@@ -23,10 +24,40 @@ namespace Snowflake.Client
         /// </summary>
         public SnowflakeClientSettings Settings => _clientSettings;
 
+        /// <summary>
+        /// Azure AD Token Provider
+        /// </summary>
+        private readonly AzureAdTokenProvider _azureAdTokenProvider;
+
         private SnowflakeSession _snowflakeSession;
         private readonly RestClient _restClient;
         private readonly RequestBuilder _requestBuilder;
         private readonly SnowflakeClientSettings _clientSettings;
+
+        /// <summary>
+        /// Creates new Snowflake client.
+        /// </summary>
+        /// <param name="clientId">Client ID</param>
+        /// <param name="clientSecret">Client Secret</param>
+        /// <param name="servicePrincipalObjectId">Service Principal Object ID</param>
+        /// <param name="tenantId">Tenant ID</param>
+        /// <param name="scope">Scope</param>
+        /// <param name="region">Region: "us-east-1", etc. Required for all except for US West Oregon (us-west-2).</param>
+        /// <param name="account">Account</param>
+        /// <param name="user">Username</param>
+        /// <param name="host">Host</param>
+        /// <param name="role">Role</param>
+        public SnowflakeClient(string clientId, string clientSecret, string servicePrincipalObjectId, string tenantId, string scope, string region, string account, string user, string host, string role)
+            : this(new AzureAdAuthInfo(clientId, clientSecret, servicePrincipalObjectId, tenantId, scope, region, account, user, host, role), urlInfo: new UrlInfo
+            {
+                Host = host,
+            },
+            sessionInfo: new SessionInfo
+            {
+                Role = role,
+            })
+        {
+        }
 
         /// <summary>
         /// Creates new Snowflake client. 
@@ -52,6 +83,11 @@ namespace Snowflake.Client
         {
         }
 
+        public SnowflakeClient(AzureAdAuthInfo authInfo, SessionInfo sessionInfo = null, UrlInfo urlInfo = null, JsonSerializerOptions jsonMapperOptions = null)
+            : this(new SnowflakeClientSettings(authInfo, sessionInfo, urlInfo, jsonMapperOptions))
+        {
+        }
+
         /// <summary>
         /// Creates new Snowflake client. 
         /// </summary>
@@ -63,6 +99,7 @@ namespace Snowflake.Client
             _clientSettings = settings;
             _restClient = new RestClient();
             _requestBuilder = new RequestBuilder(settings.UrlInfo);
+            _azureAdTokenProvider = new AzureAdTokenProvider();
 
             SnowflakeDataMapper.Configure(settings.JsonMapperOptions);
             ChunksDownloader.Configure(settings.ChunksDownloaderOptions);
@@ -104,9 +141,23 @@ namespace Snowflake.Client
             return true;
         }
 
+        /// <summary>
+        /// Authenticates user and returns new Snowflake session.
+        /// </summary>
+        /// <returns>New Snowflake session</returns>
         private async Task<SnowflakeSession> AuthenticateAsync(AuthInfo authInfo, SessionInfo sessionInfo, CancellationToken ct)
         {
             var loginRequest = _requestBuilder.BuildLoginRequest(authInfo, sessionInfo);
+
+            if(authInfo is AzureAdAuthInfo azureAdAuthInfo)
+            {
+                var azureAdAccessToken = await _azureAdTokenProvider.GetAzureAdAccessTokenAsync(azureAdAuthInfo, ct).ConfigureAwait(false);
+                loginRequest = _requestBuilder.BuildLoginRequest(authInfo, sessionInfo, azureAdAccessToken);
+            } 
+            else 
+            {
+                loginRequest = _requestBuilder.BuildLoginRequest(authInfo, sessionInfo);
+            }
 
             var response = await _restClient.SendAsync<LoginResponse>(loginRequest, ct).ConfigureAwait(false);
 

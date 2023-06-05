@@ -51,19 +51,27 @@ namespace Snowflake.Client
             _masterToken = null;
         }
 
-        internal HttpRequestMessage BuildLoginRequest(AuthInfo authInfo, SessionInfo sessionInfo)
+        internal HttpRequestMessage BuildLoginRequest(AuthInfo authInfo, SessionInfo sessionInfo, String azureAdAccessToken = null)
         {
             var requestUri = BuildLoginUrl(sessionInfo);
+            var data = new LoginRequestData();
+            
+            if (authInfo is AzureAdAuthInfo azureAdAuthInfo) {
+                data = new LoginRequestData() {
+                    Authenticator = "OAUTH",
+                    Token = azureAdAccessToken,
+                };
+            } else {
+                data = new LoginRequestData() {
+                    Password = authInfo.Password,
+                };
+            }
 
-            var data = new LoginRequestData()
-            {
-                LoginName = authInfo.User,
-                Password = authInfo.Password,
-                AccountName = authInfo.Account,
-                ClientAppId = _clientInfo.DriverName,
-                ClientAppVersion = _clientInfo.DriverVersion,
-                ClientEnvironment = _clientInfo.Environment
-            };
+            data.LoginName = authInfo.User;
+            data.AccountName = authInfo.Account;
+            data.ClientAppId = _clientInfo.DriverName;
+            data.ClientAppVersion = _clientInfo.DriverVersion;
+            data.ClientEnvironment = _clientInfo.Environment;
 
             var requestBody = new LoginRequest() { Data = data };
             var jsonBody = JsonSerializer.Serialize(requestBody, _jsonSerializerOptions);
